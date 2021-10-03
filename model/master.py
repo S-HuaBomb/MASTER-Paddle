@@ -107,12 +107,12 @@ class MASTER(nn.Layer):
 
     def model_parameters(self):
         model_parameters = filter(lambda p: p.requires_grad, self.parameters())
-        params = sum([np.prod(p.size()) for p in model_parameters])
+        params = sum([np.prod(p.shape) for p in model_parameters])
         return params
 
 
 def predict(_memory, _source, _decode_stage, _max_length, _sos_symbol, _eos_symbol, _padding_symbol):
-    batch_size = _source.size(0)
+    batch_size = _source.shape[0]
     device = _source.device
     to_return_label = \
         paddle.ones((batch_size, _max_length + 2), dtype=paddle.int64) * _padding_symbol

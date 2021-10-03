@@ -101,7 +101,7 @@ def test_model_forward():
     data_loader = DataLoader(dataset, batch_size=32, shuffle=False, num_workers=8, drop_last=False)
     for idx, (img, label) in tqdm(enumerate(data_loader)):
         target = LabelTransformer.encode(label)
-        target = target.permute(1, 0)
+        target = target.transpose([1, 0])
         output = model(img, target[:, :-1])
         print(output.shape) # (bs, len_tgt, n_cls)
         break

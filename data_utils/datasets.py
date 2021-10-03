@@ -18,11 +18,6 @@ import paddle.distributed as dist
 from paddle.io import Dataset, ChainDataset, Sampler
 from paddle.vision import transforms
 
-# import torch.distributed as dist
-# from torch.utils.data import Dataset, ConcatDataset
-# from torch.utils.data.sampler import Sampler
-# import torchvision.transforms as transforms
-
 from utils.GeometryUtils import resize_with_height, pad_image_with_specific_base
 from utils.label_util import LabelTransformer
 
@@ -461,7 +456,9 @@ class ResizeWeight(object):
                 width = self.w
 
             img = self.toTensor(img)
-            img.sub_(0.5).div_(0.5)
+            new_img = img.subtract(paddle.to_tensor(0.5)).divide(paddle.to_tensor(0.5))
+            img.set_value(new_img)
+            # img.sub_(0.5).div_(0.5)
             return img, width / self.w
         else:  # RGB format
             if img_w / img_h < 1.:
@@ -489,7 +486,9 @@ class ResizeWeight(object):
                 width = self.w
 
             img = self.toTensor(img)
-            img.sub_(0.5).div_(0.5)
+            new_img = img.subtract(paddle.to_tensor(0.5)).divide(paddle.to_tensor(0.5))
+            img.set_value(new_img)
+            # img.sub_(0.5).div_(0.5)
             return img, width / self.w
 
 
@@ -508,7 +507,9 @@ class CustomImagePreprocess:
         resized_img = cv2.resize(img_np, (self.target_width, self.target_height))
         full_channel_img = resized_img[..., None] if len(resized_img.shape) == 2 else resized_img
         resized_img_tensor = paddle.to_tensor(np.transpose(full_channel_img, (2, 0, 1)))
-        resized_img_tensor.sub_(127.5).div_(127.5)
+        new_img_tensor = resized_img_tensor.subtract(paddle.to_tensor(127.5)).divide(paddle.to_tensor(127.5))
+        resized_img_tensor.set_value(new_img_tensor)
+        # resized_img_tensor.sub_(127.5).div_(127.5)
         return resized_img_tensor, w / self.target_width
 
 

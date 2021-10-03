@@ -28,7 +28,6 @@ def predict(args):
 
     # prepare model for testing
     model = config.init_obj('model_arch', master_arch_module)
-    model = model.to(device)
     model.load_state_dict(state_dict)
     model.eval()
 
@@ -66,7 +65,6 @@ def predict(args):
         images = input_data_item['images']
         file_names = input_data_item['file_names']
         with paddle.no_grad():
-            images = images.to(device)
             if hasattr(model, 'module'):
                 model = model.module
             # (bs, max_len)

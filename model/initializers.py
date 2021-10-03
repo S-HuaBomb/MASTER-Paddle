@@ -251,7 +251,7 @@ def dirac_(tensor, groups=1):
     if dimensions not in [3, 4, 5]:
         raise ValueError("Only tensors with 3, 4, or 5 dimensions are supported")
 
-    sizes = tensor.size()
+    sizes = tensor.shape
 
     if sizes[0] % groups != 0:
         raise ValueError('dim 0 must be divisible by groups')
@@ -265,13 +265,13 @@ def dirac_(tensor, groups=1):
         for g in range(groups):
             for d in range(min_dim):
                 if dimensions == 3:  # Temporal convolution
-                    tensor[g * out_chans_per_grp + d, d, tensor.size(2) // 2] = 1
+                    tensor[g * out_chans_per_grp + d, d, tensor.shape[2] // 2] = 1
                 elif dimensions == 4:  # Spatial convolution
-                    tensor[g * out_chans_per_grp + d, d, tensor.size(2) // 2,
-                           tensor.size(3) // 2] = 1
+                    tensor[g * out_chans_per_grp + d, d, tensor.shape[2] // 2,
+                           tensor.shape[3] // 2] = 1
                 else:  # Volumetric convolution
-                    tensor[g * out_chans_per_grp + d, d, tensor.size(2) // 2,
-                           tensor.size(3) // 2, tensor.size(4) // 2] = 1
+                    tensor[g * out_chans_per_grp + d, d, tensor.shape[2] // 2,
+                           tensor.shape[3] // 2, tensor.shape[4] // 2] = 1
     return tensor
 
 
@@ -443,7 +443,7 @@ def orthogonal_(tensor, gain=1):
     if tensor.ndimension() < 2:
         raise ValueError("Only tensors with 2 or more dimensions are supported")
 
-    rows = tensor.size(0)
+    rows = tensor.shape[0]  # .size(0)
     cols = tensor.numel() // rows
     flattened = tensor.new(rows, cols).normal_(0, 1)
 

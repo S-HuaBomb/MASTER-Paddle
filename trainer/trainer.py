@@ -50,7 +50,6 @@ class Trainer:
 
         # setup GPU device if available, move model into configured device
         self.device, self.device_ids = self._prepare_device(config['local_rank'], config['local_world_size'])
-        self.model = model.to(self.device)
 
         self.optimizer = optimizer
 
@@ -239,10 +238,8 @@ class Trainer:
             step_idx += 1
             # import pdb;pdb.set_trace()
             # prepare input data
-            images = images.to(self.device)
             target = LabelTransformer.encode(text_label)
-            target = target.to(self.device)
-            target = target.permute(1, 0)
+            target = target.transpose([1, 0])
             # with torch.autograd.set_detect_anomaly(self.config['trainer']['anomaly_detection']):
             outputs = self.model(images, target[:, :-1])  # need to remove <EOS> in target
             loss = F.cross_entropy(outputs.reshape([-1, outputs.shape[-1]]),
