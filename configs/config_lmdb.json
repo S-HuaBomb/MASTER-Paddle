@@ -4,8 +4,8 @@
 
     "finetune":false,
 
-    "distributed":true,
-    "local_world_size":4,
+    "distributed":false,
+    "local_world_size":1,
     "local_rank":-1,
     "global_rank":-1,
 
@@ -93,21 +93,21 @@
           }
     },
     "lr_scheduler": {
-        "type": null,
+        "type": "StepDecay",
         "args": {
             "step_size": 30,
-            "gamma": 0.1
+            "gamma": 0.8
         }
     },
 
     "trainer": {
-        "epochs": 12,
+        "epochs": 600,
         "max_len_step":null,
 
         "do_validation": true,
-        "validation_start_epoch": 5,
+        "validation_start_epoch": 500,
         "log_step_interval": 1,
-        "val_step_interval": 100000,
+        "val_step_interval": 2000,
 
         "train_batch_size": 64,
         "val_batch_size":64,

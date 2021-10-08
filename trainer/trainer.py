@@ -165,8 +165,8 @@ class Trainer:
                 val_res = ''
 
             # update lr after training an epoch, epoch-wise
-            # if self.lr_scheduler is not None:
-            #     self.lr_scheduler.step()
+            if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
+                self.lr_scheduler.step()
 
             # every epoch log information
             self.logger_info(
@@ -235,8 +235,8 @@ class Trainer:
             images = input_data_item['images']
             text_label = input_data_item['labels']
 
-            # # step-wise lr scheduler, comment this, using epoch-wise lr_scheduler
-            # if self.lr_scheduler is not None:
+            # step-wise lr scheduler, comment this, using epoch-wise lr_scheduler
+            # if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
             #     self.lr_scheduler.step()
 
             # for step_idx in range(self.len_step):

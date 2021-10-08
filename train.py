@@ -9,6 +9,7 @@ import random
 
 import numpy as np
 import paddle
+import paddle.optimizer as optim
 import paddle.distributed as dist
 
 import data_utils.datasets as master_dataset
@@ -69,15 +70,11 @@ def main(config: ConfigParser, local_master: bool, logger=None):
     model = config.init_obj('model_arch', master_arch)
     logger.info(f'Model created, trainable parameters: {model.model_parameters()}.') if local_master else None
 
-    # build optimizer, learning rate scheduler.
-    optimizer = paddle.optimizer.Adam()
-    optimizer = config.init_obj('optimizer', paddle.optimizer, model.parameters())
+    learning_rate = config['optimizer']['args']['lr']  # 0.0004
     if config['lr_scheduler']['type'] is not None:
-        lr_scheduler = optim.lr.ReduceOnPlateau(learning_rate=self.config.learningRate, mode='min',
-                                                factor=0.5, patience=400, min_lr=0.0003, verbose=True)
-        lr_scheduler = config.init_obj('lr_scheduler', paddle.optimizer.lr.LRScheduler, optimizer)
+        lr_scheduler = optim.lr.StepDecay(learning_rate=learning_rate, step_size=30, gamma=0.8, verbose=True)
     else:
-        lr_scheduler = config['optimizer']['args']['lr']  # 0.0004
+        lr_scheduler = learning_rate
 
     # build optimizer, learning rate scheduler.
     optimizer = paddle.optimizer.Adam(parameters=model.parameters(), learning_rate=lr_scheduler)
