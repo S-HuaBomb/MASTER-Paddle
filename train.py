@@ -34,13 +34,13 @@ def main(config: ConfigParser, local_master: bool, logger=None):
     train_dataset = config.init_obj('train_dataset', master_dataset,
                                     transform=master_dataset.CustomImagePreprocess(img_h, img_w, convert_to_gray),
                                     convert_to_gray=convert_to_gray)
-    train_sampler = paddle.io.DistributedBatchSampler(train_dataset) \
-        if config['distributed'] else ImbalancedDatasetSampler(train_dataset)
+    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset) if config['distributed'] else None
 
-    is_shuffle = False
-    train_data_loader = config.init_obj('train_loader', paddle.io.DataLoader,
+    is_shuffle = True if train_sampler is None else False
+
+    train_data_loader = paddle.io.DataLoader(
                                         dataset=train_dataset,
-                                        sampler=train_sampler,
+                                        batch_sampler=train_sampler,
                                         batch_size=train_batch_size,
                                         collate_fn=DistCollateFn(training=True),
                                         num_workers=train_num_workers,
@@ -50,7 +50,7 @@ def main(config: ConfigParser, local_master: bool, logger=None):
                                   convert_to_gray=convert_to_gray)
     val_sampler = DistValSampler(list(range(len(val_dataset))), batch_size=val_batch_size,
                                  distributed=config['distributed'])
-    val_data_loader = config.init_obj('val_loader', paddle.io.DataLoader,
+    val_data_loader = paddle.io.DataLoader(
                                       dataset=val_dataset,
                                       batch_sampler=val_sampler,
                                       batch_size=1,
@@ -70,11 +70,17 @@ def main(config: ConfigParser, local_master: bool, logger=None):
     logger.info(f'Model created, trainable parameters: {model.model_parameters()}.') if local_master else None
 
     # build optimizer, learning rate scheduler.
+    optimizer = paddle.optimizer.Adam()
     optimizer = config.init_obj('optimizer', paddle.optimizer, model.parameters())
     if config['lr_scheduler']['type'] is not None:
+        lr_scheduler = optim.lr.ReduceOnPlateau(learning_rate=self.config.learningRate, mode='min',
+                                                factor=0.5, patience=400, min_lr=0.0003, verbose=True)
         lr_scheduler = config.init_obj('lr_scheduler', paddle.optimizer.lr.LRScheduler, optimizer)
     else:
-        lr_scheduler = None
+        lr_scheduler = config['optimizer']['args']['lr']  # 0.0004
+
+    # build optimizer, learning rate scheduler.
+    optimizer = paddle.optimizer.Adam(parameters=model.parameters(), learning_rate=lr_scheduler)
     logger.info('Optimizer and lr_scheduler created.') if local_master else None
 
     # log training related information

@@ -9,14 +9,14 @@
     "local_rank":-1,
     "global_rank":-1,
 
-    "deterministic":true,
+    "deterministic":false,
     "seed":123,
 
     "model_arch": {
         "type": "MASTER",
         "args": {
             "common_kwargs":{
-                "n_class":-1,
+                "n_class":95,
                 "with_encoder":false,
                 "model_size": 512,
                 "multiheads": 8
@@ -48,7 +48,7 @@
         "type": "hierarchy_dataset",
         "args": {
             "lmdb_dir_root":"/home/wwyu/dataset/data_lmdb_release/training",
-            "select_data": "MJ_train-ST",
+            "select_data": "MJ/MJ_train-ST",
             "img_w":160,
             "img_h":48,
             "training":true

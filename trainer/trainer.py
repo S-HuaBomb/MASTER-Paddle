@@ -11,7 +11,7 @@ import distance
 
 import paddle
 import paddle.nn.functional as F
-import paddle.distributed as dist
+import paddle.distributed as dist  # 第1处改动 导入分布式训练所需的包
 # from torch.parallel import DistributedDataParallel as DDP
 from paddle import DataParallel as DDP
 
@@ -19,6 +19,9 @@ from utils.metrics import AverageMetricTracker
 from logger import TensorboardWriter
 from utils.label_util import LabelTransformer
 from utils import decode_util
+
+# 第2处改动，初始化并行环境
+dist.init_parallel_env()
 
 
 class Trainer:
@@ -94,9 +97,11 @@ class Trainer:
             # sync_batch_norm only support one gpu per process mode
             self.model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(self.model)
 
-        if self.distributed:  # move model to distributed gpu
-            self.model = DDP(self.model, device_ids=self.device_ids, output_device=self.device_ids[0],
-                             find_unused_parameters=True)
+        if self.distributed:  # move model to distributed gpu ##############################################
+            # 第3处改动，增加paddle.DataParallel封装
+            self.model = paddle.DataParallel(self.model)
+            # self.model = DDP(self.model, device_ids=self.device_ids, output_device=self.device_ids[0],
+            #                  find_unused_parameters=True)
 
         # iteration-based training
         self.len_step = len(data_loader)
@@ -160,8 +165,8 @@ class Trainer:
                 val_res = ''
 
             # update lr after training an epoch, epoch-wise
-            if self.lr_scheduler is not None:
-                self.lr_scheduler.step()
+            # if self.lr_scheduler is not None:
+            #     self.lr_scheduler.step()
 
             # every epoch log information
             self.logger_info(
@@ -247,7 +252,7 @@ class Trainer:
                                    ignore_index=LabelTransformer.PAD)
 
             # backward and update parameters
-            self.optimizer.zero_grad()
+            self.optimizer.clear_grad()
             loss.backward()
             # self.average_gradients(self.model)
             self.optimizer.step()

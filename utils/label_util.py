@@ -9,6 +9,7 @@ import paddle
 STRING_MAX_LEN = 100
 VOCABULARY_FILE_NAME = 'keys.txt'
 
+
 class LabelConverterForMASTER:
     def __init__(self, classes, max_length=-1, ignore_over=False):
         """
@@ -41,6 +42,7 @@ class LabelConverterForMASTER:
         # end of sequence
         for i, item in enumerate(self.alphabet):
             self.alphabet_mapper[item] = i + 4
+
         self.alphabet_inverse_mapper = {v: k for k, v in self.alphabet_mapper.items()}
 
         self.EOS = self.alphabet_mapper['<EOS>']
@@ -49,6 +51,7 @@ class LabelConverterForMASTER:
         self.UNK = self.alphabet_mapper['<UNK>']
 
         self.nclass = len(self.alphabet) + 4
+        print(self.nclass)  # 99
         self.max_length = max_length
         self.ignore_over = ignore_over
 
@@ -111,3 +114,16 @@ class LabelConverterForMASTER:
 
 LabelTransformer = LabelConverterForMASTER(Path(__file__).parent.joinpath(VOCABULARY_FILE_NAME),
                                            max_length=STRING_MAX_LEN, ignore_over=False)
+
+
+if __name__ == '__main__':
+    string = "I am SHB~ Hahahah!  "
+    LabelTransformer = LabelConverterForMASTER(Path(__file__).parent.joinpath(VOCABULARY_FILE_NAME),
+                                               max_length=STRING_MAX_LEN, ignore_over=False)
+    encode_t = LabelTransformer.encode(text=string)
+    print(encode_t)
+    s = ''
+    for i in encode_t:
+        decode_t = LabelTransformer.decode(i)
+        s += decode_t
+    print(s)

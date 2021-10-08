@@ -267,7 +267,7 @@ class LmdbDataset(Dataset):
             return self.__getitem__(np.random.randint(self.__len__()))
 
 
-def hierarchy_dataset(root, select_data=None, training=True, img_w=256, img_h=32, transform=None,
+def hierarchy_dataset(lmdb_dir_root, select_data=None, training=True, img_w=256, img_h=32, transform=None,
                       target_transform=None,
                       case_sensitive=True, convert_to_gray=True):
     """
@@ -278,7 +278,7 @@ def hierarchy_dataset(root, select_data=None, training=True, img_w=256, img_h=32
     if select_data is not None:
         select_data = select_data.split('-')
         for select_d in select_data:
-            dataset = LmdbVer2Dataset(lmdb_dir_root=os.path.join(root, select_d), training=training, img_w=img_w,
+            dataset = LmdbVer2Dataset(lmdb_dir_root=os.path.join(lmdb_dir_root, select_d), training=training, img_w=img_w,
                                       img_h=img_h, transform=transform, target_transform=target_transform,
                                       case_sensitive=case_sensitive, convert_to_gray=convert_to_gray)
             dataset_list.append(dataset)
@@ -550,7 +550,7 @@ class DistValSampler(Sampler):
     # to guarantee every gpu validate different samples simultaneously
     # WARNING: Some baches will contain an empty array to signify there aren't enough samples
     # distributed=False - same validation happens on every single gpu
-    def __init__(self, indices, batch_size, data_source: Sized, distributed=True):
+    def __init__(self, indices, batch_size, data_source: Sized, distributed=False):
         super().__init__(data_source)
         self.indices = indices
         self.batch_size = batch_size
