@@ -19,6 +19,9 @@ from data_utils.datasets import DistValSampler, DistCollateFn
 from parse_config import ConfigParser
 from trainer import Trainer
 
+# set device
+paddle.set_device('gpu' if paddle.is_compiled_with_cuda() else 'cpu')
+
 
 def main(config: ConfigParser, local_master: bool, logger=None):
     train_batch_size = config['trainer']['train_batch_size']

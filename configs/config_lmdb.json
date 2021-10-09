@@ -47,7 +47,7 @@
     "train_dataset": {
         "type": "hierarchy_dataset",
         "args": {
-            "lmdb_dir_root":"/home/wwyu/dataset/data_lmdb_release/training",
+            "lmdb_dir_root":"work/data_lmdb_release/training",
             "select_data": "MJ/MJ_train-ST",
             "img_w":160,
             "img_h":48,
@@ -68,8 +68,8 @@
     "val_dataset": {
         "type": "hierarchy_dataset",
         "args": {
-            "lmdb_dir_root":"/home/wwyu/dataset/data_lmdb_release/val",
-            "select_data": "MJ_test-MJ_valid",
+            "lmdb_dir_root":"work/data_lmdb_release",
+            "select_data": "validation",
             "img_w":160,
             "img_h":48,
             "training":true
@@ -93,19 +93,19 @@
           }
     },
     "lr_scheduler": {
-        "type": "StepDecay",
+        "type": null,
         "args": {
-            "step_size": 30,
-            "gamma": 0.8
+            "step_size": 10,
+            "gamma": 0.1
         }
     },
 
     "trainer": {
-        "epochs": 600,
+        "epochs": 50,
         "max_len_step":null,
 
         "do_validation": true,
-        "validation_start_epoch": 500,
+        "validation_start_epoch": 5,
         "log_step_interval": 1,
         "val_step_interval": 2000,
 
@@ -114,8 +114,8 @@
         "train_num_workers":2,
         "val_num_workers":2,
 
-        "save_dir": "/home/wwyu/model_output/master_saved/",
-        "save_period": 250,
+        "save_dir": "work/model_output/matser_saved/",
+        "save_period": 5,
         "log_verbosity": 2,
 
         "monitor": "max word_acc",

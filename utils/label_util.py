@@ -4,6 +4,7 @@
 import collections
 from pathlib import Path
 
+import numpy as np
 import paddle
 
 STRING_MAX_LEN = 100
@@ -51,7 +52,7 @@ class LabelConverterForMASTER:
         self.UNK = self.alphabet_mapper['<UNK>']
 
         self.nclass = len(self.alphabet) + 4
-        print(self.nclass)  # 99
+        # print(self.nclass)  # 99
         self.max_length = max_length
         self.ignore_over = ignore_over
 
@@ -75,7 +76,8 @@ class LabelConverterForMASTER:
 
             nb = len(text)
 
-            targets = paddle.zeros([nb, (local_max_length + 2)])
+            targets = np.zeros([nb, (local_max_length + 2)])
+            # targets = paddle.zeros([nb, (local_max_length + 2)])
             targets[:, :] = self.PAD
 
             for i in range(nb):
@@ -117,13 +119,14 @@ LabelTransformer = LabelConverterForMASTER(Path(__file__).parent.joinpath(VOCABU
 
 
 if __name__ == '__main__':
-    string = "I am SHB~ Hahahah!  "
+    # string = "I am SHB~ Hahahah!  "
+    string = ["I am SHB~ Hahahah! ?) "]
     LabelTransformer = LabelConverterForMASTER(Path(__file__).parent.joinpath(VOCABULARY_FILE_NAME),
                                                max_length=STRING_MAX_LEN, ignore_over=False)
     encode_t = LabelTransformer.encode(text=string)
     print(encode_t)
     s = ''
-    for i in encode_t:
+    for i in encode_t[0]:
         decode_t = LabelTransformer.decode(i)
         s += decode_t
-    print(s)
+    print("decode s:", s)

@@ -106,7 +106,7 @@ class MASTER(nn.Layer):
         return decode_stage_result
 
     def model_parameters(self):
-        model_parameters = filter(lambda p: p.requires_grad, self.parameters())
+        model_parameters = filter(lambda p: p.trainable, self.parameters())
         params = sum([np.prod(p.shape) for p in model_parameters])
         return params
 
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     model = MASTER(**config['model_arch']['args'])
     if args.checkpoint:
         checkpoint = paddle.load(args.checkpoint)['model_state_dict']
-        model.load_state_dict(checkpoint)
+        model.set_state_dict(checkpoint)
     model.to(device)
     model.eval()
     input_image_tensor = paddle.zeros((1, 3, 100, 150), dtype=paddle.float32)

@@ -15,7 +15,7 @@ from paddle.nn import Dropout
 def clones(_to_clone_module, _clone_times, _is_deep=True):
     """Produce N identical layers."""
     copy_method = copy.deepcopy if _is_deep else copy.copy
-    return nn.ModuleList([copy_method(_to_clone_module) for _ in range(_clone_times if _is_deep else 1)])
+    return nn.LayerList([copy_method(_to_clone_module) for _ in range(_clone_times if _is_deep else 1)])
 
 
 def subsequent_mask(_target):
@@ -24,7 +24,7 @@ def subsequent_mask(_target):
     return paddle.tril(paddle.ones((batch_size, 1, sequence_length, sequence_length), dtype=paddle.bool))
 
 
-class MultiHeadAttention():  # 继承自 torch.jit.ScriptModule
+class MultiHeadAttention(nn.Layer):  # 继承自 torch.jit.ScriptModule
     def __init__(self, _multi_attention_heads, _dimensions, _dropout=0.1):
         """
 
@@ -99,7 +99,7 @@ class PositionwiseFeedForward(nn.Layer):
         return self.w_2(self.dropout(F.relu(self.w_1(_input_tensor))))
 
 
-class PositionalEncoding():
+class PositionalEncoding(nn.Layer):
     """Implement the PE function."""
 
     def __init__(self, _dimensions, _dropout=0.1, _max_len=5000):
@@ -132,11 +132,11 @@ class Encoder(nn.Layer):
                  _share_parameter=True):
         super(Encoder, self).__init__()
         self.share_parameter = _share_parameter
-        self.attention = nn.ModuleList([
+        self.attention = nn.LayerList([
             MultiHeadAttention(_multi_heads_count, _dimensions, _dropout)
             for _ in range(1 if _share_parameter else _stacks)
         ])
-        self.position_feed_forward = nn.ModuleList([
+        self.position_feed_forward = nn.LayerList([
             PositionwiseFeedForward(_dimensions, _feed_forward_size, _dropout)
             for _ in range(1 if _share_parameter else _stacks)
         ])
@@ -178,15 +178,15 @@ class Decoder(nn.Layer):
                  _padding_symbol=0, _share_parameter=True):
         super(Decoder, self).__init__()
         self.share_parameter = _share_parameter
-        self.attention = nn.ModuleList([
+        self.attention = nn.LayerList([
             MultiHeadAttention(_multi_heads_count, _dimensions, _dropout)
             for _ in range(1 if _share_parameter else _stacks)
         ])
-        self.source_attention = nn.ModuleList([
+        self.source_attention = nn.LayerList([
             MultiHeadAttention(_multi_heads_count, _dimensions, _dropout)
             for _ in range(1 if _share_parameter else _stacks)
         ])
-        self.position_feed_forward = nn.ModuleList([
+        self.position_feed_forward = nn.LayerList([
             PositionwiseFeedForward(_dimensions, _feed_forward_size, _dropout)
             for _ in range(1 if _share_parameter else _stacks)
         ])

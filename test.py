@@ -16,6 +16,9 @@ from data_utils.datasets import TextDataset, ResizeWeight, DistCollateFn, Custom
 from utils.label_util import LabelTransformer
 from utils import decode_util
 
+# set device
+paddle.set_device('gpu' if paddle.is_compiled_with_cuda() else 'cpu')
+
 
 def predict(args):
     device = paddle.get_device()
@@ -28,7 +31,7 @@ def predict(args):
 
     # prepare model for testing
     model = config.init_obj('model_arch', master_arch_module)
-    model.load_state_dict(state_dict)
+    model.set_state_dict(state_dict)
     model.eval()
 
     # setup dataset and data_loader instances

@@ -53,6 +53,7 @@ class Trainer:
 
         # setup GPU device if available, move model into configured device
         self.device, self.device_ids = self._prepare_device(config['local_rank'], config['local_world_size'])
+        self.model = model
 
         self.optimizer = optimizer
 
@@ -510,8 +511,7 @@ class Trainer:
             device_ids = list(range(local_rank * ngpu_per_process, (local_rank + 1) * ngpu_per_process))
 
             if paddle.is_compiled_with_cuda() and local_rank != -1:
-                paddle.set_device(device_ids[0])  # device_ids[0] =local_rank if local_world_size = n_gpu per node
-                device = 'cuda'
+                device = 'gpu'
                 self.logger_info(
                     f"[Process {os.getpid()}] world_size = {dist.get_world_size()}, "
                     + f"rank = {dist.get_rank()}, n_gpu/process = {ngpu_per_process}, device_ids = {device_ids}"
@@ -535,9 +535,8 @@ class Trainer:
 
             list_ids = list(range(n_gpu_use))
             if n_gpu_use > 0:
-                paddle.set_device(list_ids[0])  # only use first available gpu as devices
                 self.logger_warning(f'Training is using GPU {list_ids[0]}!')
-                device = 'cuda'
+                device = 'gpu'
             else:
                 self.logger_warning('Training is using CPU!')
                 device = 'cpu'
@@ -610,7 +609,7 @@ class Trainer:
             self.logger_warning("Warning: Architecture configuration given in config file is different from that of "
                                 "checkpoint. This may yield an exception while state_dict is being loaded.")
         # self.model.load_state_dict(checkpoint['state_dict'])
-        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.model.set_state_dict(checkpoint['model_state_dict'])
 
         # load optimizer state from checkpoint only when optimizer type is not changed.
         if not self.finetune:  # resume mode will load optimizer state and continue train
@@ -619,7 +618,7 @@ class Trainer:
                     "Warning: Optimizer type given in config file is different from that of checkpoint. "
                     "Optimizer parameters not being resumed.")
             else:
-                self.optimizer.load_state_dict(checkpoint['optimizer'])
+                self.optimizer.set_state_dict(checkpoint['optimizer'])
 
         if self.finetune:
             self.logger_info("Checkpoint loaded. Finetune training from epoch {}".format(self.start_epoch))

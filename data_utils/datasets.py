@@ -15,11 +15,15 @@ import lmdb
 
 import paddle
 import paddle.distributed as dist
-from paddle.io import Dataset, ChainDataset, Sampler
+from paddle.io import Dataset, Sampler
 from paddle.vision import transforms
 
+from data_utils.ConcatDataset import ConcatDataset
 from utils.GeometryUtils import resize_with_height, pad_image_with_specific_base
 from utils.label_util import LabelTransformer
+
+# set device
+paddle.set_device('gpu' if paddle.is_compiled_with_cuda() else 'cpu')
 
 
 class TextDataset(Dataset):
@@ -282,7 +286,7 @@ def hierarchy_dataset(lmdb_dir_root, select_data=None, training=True, img_w=256,
                                       img_h=img_h, transform=transform, target_transform=target_transform,
                                       case_sensitive=case_sensitive, convert_to_gray=convert_to_gray)
             dataset_list.append(dataset)
-    concatenated_dataset = ChainDataset(dataset_list)
+    concatenated_dataset = ConcatDataset(dataset_list)
     return concatenated_dataset
 
 
@@ -506,7 +510,7 @@ class CustomImagePreprocess:
         h, w = img_np.shape[:2]
         resized_img = cv2.resize(img_np, (self.target_width, self.target_height))
         full_channel_img = resized_img[..., None] if len(resized_img.shape) == 2 else resized_img
-        resized_img_tensor = paddle.to_tensor(np.transpose(full_channel_img, (2, 0, 1)))
+        resized_img_tensor = paddle.to_tensor(np.transpose(full_channel_img, (2, 0, 1)), dtype=paddle.float32)
         new_img_tensor = resized_img_tensor.subtract(paddle.to_tensor(127.5)).divide(paddle.to_tensor(127.5))
         resized_img_tensor.set_value(new_img_tensor)
         # resized_img_tensor.sub_(127.5).div_(127.5)
@@ -550,8 +554,8 @@ class DistValSampler(Sampler):
     # to guarantee every gpu validate different samples simultaneously
     # WARNING: Some baches will contain an empty array to signify there aren't enough samples
     # distributed=False - same validation happens on every single gpu
-    def __init__(self, indices, batch_size, data_source: Sized, distributed=False):
-        super().__init__(data_source)
+    def __init__(self, indices, batch_size, distributed=False):
+        super().__init__()
         self.indices = indices
         self.batch_size = batch_size
         if distributed:

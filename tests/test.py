@@ -84,7 +84,6 @@ def test_model_forward():
     config = ConfigParser.from_args(args, options)
 
     if paddle.is_compiled_with_cuda() and config['local_rank'] != -1:
-        paddle.set_device(config['local_rank'])
         device = 'gpu'
     else:
         device = 'cpu'
