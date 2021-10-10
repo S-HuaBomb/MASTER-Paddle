@@ -119,7 +119,7 @@ class MultiAspectGCAttention(nn.Layer):
             _, C1, _, _ = channel_concat_term.shape
             N, C2, H, W = out.shape
 
-            out = paddle.concat([out, channel_concat_term.expand(-1, -1, H, W)], axis=1)
+            out = paddle.concat([out, channel_concat_term.expand([-1, -1, H, W])], axis=1)
             out = self.cat_conv(out)
             out = F.layer_norm(out, [self.inplanes, H, W])
             out = F.relu(out)

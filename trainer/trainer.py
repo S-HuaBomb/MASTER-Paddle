@@ -173,7 +173,7 @@ class Trainer:
             self.logger_info(
                 '[Epoch End] Epoch:[{}/{}] Loss: {:.6f} LR: {:.8f}'.
                 format(epoch, self.epochs,
-                       result_dict['loss'], self._get_lr()) + val_res
+                       result_dict['loss'], self.optimizer.get_lr()) + val_res
             )
 
             # evaluate model performance according to configured metric, check early stop, and
@@ -253,10 +253,10 @@ class Trainer:
                                    ignore_index=LabelTransformer.PAD)
 
             # backward and update parameters
-            self.optimizer.clear_grad()
             loss.backward()
             # self.average_gradients(self.model)
             self.optimizer.step()
+            self.optimizer.clear_grad()
 
             ## Train batch done. Logging results
 
@@ -291,7 +291,7 @@ class Trainer:
                     'Train Epoch:[{}/{}] Step:[{}/{}] Loss: {:.6f} Loss_avg: {:.6f} LR: {:.8f}'.
                         format(epoch, self.epochs, step_idx, self.len_step,
                                self.train_metrics.val('loss'),
-                               self.train_metrics.avg('loss'), self._get_lr()))
+                               self.train_metrics.avg('loss'), self.optimizer.get_lr()))
                 # self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
             # do validation after val_step_interval iteration
@@ -452,8 +452,8 @@ class Trainer:
             valid_batches = 1  # can be regard as dist.world_size
         # sum metrics across all valid process
         sum_metrics_tensor = paddle.to_tensor([batch_size, valid_batches,
-                                           correct, correct_case_ins, total_edit_distance,
-                                           total_distance_ref]).astype(paddle.float32)
+                                               correct, correct_case_ins, total_edit_distance,
+                                               total_distance_ref]).astype(paddle.float32)
         # # Use a barrier() to make sure that all process have finished above code
         # dist.barrier()
         sum_metrics_tensor = self.sum_tesnor(sum_metrics_tensor)
@@ -466,10 +466,6 @@ class Trainer:
         word_acc_case_ins = correct_case_ins / batch_total
         edit_distance_acc = 1 - total_edit_distance / total_distance_ref
         return word_acc, word_acc_case_ins, edit_distance_acc, total_distance_ref, batch_total
-
-    def _get_lr(self):
-        for group in self.optimizer.param_groups:
-            return group['lr']
 
     def average_gradients(self, model):
         '''

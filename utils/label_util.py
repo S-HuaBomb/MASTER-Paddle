@@ -89,7 +89,7 @@ class LabelConverterForMASTER:
                 targets[i][0] = self.SOS  # start
                 targets[i][1:len(text[i]) + 1] = text[i]
                 targets[i][len(text[i]) + 1] = self.EOS
-            text = targets.transpose([0, 1])
+            text = targets.transpose([1, 0])
         return paddle.to_tensor(text, dtype=paddle.int64)
 
     def decode(self, t):
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     encode_t = LabelTransformer.encode(text=string)
     print(encode_t)
     s = ''
-    for i in encode_t[0]:
+    for i in encode_t:
         decode_t = LabelTransformer.decode(i)
         s += decode_t
     print("decode s:", s)

@@ -56,10 +56,7 @@ class MultiHeadAttention(nn.Layer):  # 继承自 torch.jit.ScriptModule
         d_k = _value.shape[-1]
         score = paddle.matmul(_query, _key.transpose([0, 1, 3, 2])) / math.sqrt(d_k)  # (N, h, seq_len, seq_len)
         if _mask is not None:
-            scoren = score.numpy()
-            maskn = (_mask == 0).numpy()
-            scoren[maskn] = -1e9
-            score = paddle.to_tensor(scoren)
+            score = paddle.where(_mask.astype(paddle.float32) == 0, paddle.to_tensor(-1e9), score)
             # score = score.masked_fill(_mask == 0, -1e9)  # score (N, h, seq_len, seq_len)
         p_attn = F.softmax(score, axis=-1)
         # (N, h, seq_len, d_v), (N, h, seq_len, seq_len)
@@ -201,12 +198,10 @@ class Decoder(nn.Layer):
     def _generate_target_mask(self, _source, _target):
         target_pad_mask = (_target != self.padding_symbol).unsqueeze(1).unsqueeze(3)  # (b, 1, len_src, 1)
         target_length = _target.shape[1]
-        target_sub_mask = paddle.tril(
-            paddle.ones((target_length, target_length), dtype=paddle.uint8)
-        )
+        target_sub_mask = paddle.tril(paddle.ones((target_length, target_length))).astype(paddle.uint8)
         source_mask = paddle.ones((target_length, _source.shape[1]), dtype=paddle.uint8)
-        target_mask = target_pad_mask & target_sub_mask.bool()
-        return source_mask, target_mask
+        target_mask = target_pad_mask.numpy() & target_sub_mask.astype(paddle.bool).numpy()
+        return source_mask, paddle.to_tensor(target_mask)
 
     def eval(self):
         self.attention.eval()
