@@ -4,8 +4,8 @@
 
     "finetune":false,
 
-    "distributed":false,
-    "local_world_size":1,
+    "distributed":true,
+    "local_world_size":4,
     "local_rank":-1,
     "global_rank":-1,
 
@@ -47,7 +47,7 @@
     "train_dataset": {
         "type": "hierarchy_dataset",
         "args": {
-            "lmdb_dir_root":"work/data_lmdb_release/training",
+            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release/training",
             "select_data": "MJ/MJ_train-ST",
             "img_w":160,
             "img_h":48,
@@ -68,7 +68,7 @@
     "val_dataset": {
         "type": "hierarchy_dataset",
         "args": {
-            "lmdb_dir_root":"work/data_lmdb_release",
+            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release",
             "select_data": "validation",
             "img_w":160,
             "img_h":48,
@@ -110,11 +110,11 @@
         "val_step_interval": 2000,
 
         "train_batch_size": 128,
-        "val_batch_size":64,
+        "val_batch_size":128,
         "train_num_workers":2,
         "val_num_workers":2,
 
-        "save_dir": "work/model_output/matser_saved/",
+        "save_dir": "/root/paddlejob/workspace/output/matser_saved/",
         "save_period": 2,
         "log_verbosity": 2,
 

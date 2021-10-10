@@ -100,7 +100,7 @@ class Trainer:
 
         if self.distributed:  # move model to distributed gpu ##############################################
             # 第3处改动，增加paddle.DataParallel封装
-            self.model = paddle.DataParallel(self.model)
+            self.model = paddle.DataParallel(self.model, find_unused_parameters=True)
             # self.model = DDP(self.model, device_ids=self.device_ids, output_device=self.device_ids[0],
             #                  find_unused_parameters=True)
 
@@ -145,8 +145,8 @@ class Trainer:
 
             # ensure distribute worker sample different data,
             # set different random seed by passing epoch to sampler
-            if self.distributed:
-                self.data_loader.sampler.set_epoch(epoch)
+            # if self.distributed:
+            #     self.data_loader.sampler.set_epoch(epoch)
 
             self.valid_data_loader.batch_sampler.set_epoch(
                 epoch) if self.valid_data_loader.batch_sampler is not None else None

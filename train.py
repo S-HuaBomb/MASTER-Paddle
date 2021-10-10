@@ -38,17 +38,24 @@ def main(config: ConfigParser, local_master: bool, logger=None):
     train_dataset = config.init_obj('train_dataset', master_dataset,
                                     transform=master_dataset.CustomImagePreprocess(img_h, img_w, convert_to_gray),
                                     convert_to_gray=convert_to_gray)
-    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset) if config['distributed'] else None
 
-    is_shuffle = True if train_sampler is None else False
+    # train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset) if config['distributed'] else None
+    train_sampler = paddle.io.DistributedBatchSampler(train_dataset, batch_size=train_batch_size, shuffle=True) \
+        if config['distributed'] else None
 
-    train_data_loader = paddle.io.DataLoader(
-                                        dataset=train_dataset,
-                                        batch_sampler=train_sampler,
-                                        batch_size=train_batch_size,
-                                        collate_fn=DistCollateFn(training=True),
-                                        num_workers=train_num_workers,
-                                        shuffle=is_shuffle)
+    if train_sampler is not None:
+        train_data_loader = paddle.io.DataLoader(
+                                            dataset=train_dataset,
+                                            batch_sampler=train_sampler,
+                                            collate_fn=DistCollateFn(training=True),
+                                            num_workers=train_num_workers,)
+    else:
+        train_data_loader = paddle.io.DataLoader(
+                                            dataset=train_dataset,
+                                            batch_size=train_batch_size,
+                                            collate_fn=DistCollateFn(training=True),
+                                            num_workers=train_num_workers,
+                                            shuffle=True)
     val_dataset = config.init_obj('val_dataset', master_dataset,
                                   transform=master_dataset.CustomImagePreprocess(img_h, img_w, convert_to_gray),
                                   convert_to_gray=convert_to_gray)
@@ -151,7 +158,7 @@ def entry_point(config: ConfigParser):
 
     if config['distributed']:
         # init process group
-        dist.init_process_group(backend='nccl', init_method='env://')
+        # dist.init_process_group(backend='nccl', init_method='env://')
         config.update_config('global_rank', dist.get_rank())
         # log distributed training cfg
         logger.info(
@@ -161,9 +168,9 @@ def entry_point(config: ConfigParser):
 
     # start train
     main(config, local_master, logger if local_master else None)
-    if config['distributed']:
-        # tear down the process group
-        dist.destroy_process_group()
+    # if config['distributed']:
+    #     # tear down the process group
+    #     dist.destroy_process_group()
 
 
 def fix_random_seed_for_reproduce(seed):
