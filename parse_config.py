@@ -51,8 +51,8 @@ class ConfigParser:
 
             # make directory for saving checkpoints and log.
             exist_ok = run_id == ''
-            self.save_dir.mkdir(parents=True, exist_ok=exist_ok)
-            self.log_dir.mkdir(parents=True, exist_ok=exist_ok)
+            self.save_dir.mkdir(parents=False, exist_ok=True)
+            self.log_dir.mkdir(parents=False, exist_ok=True)
 
             # save updated config file to the checkpoint dir, only local master save file
             write_json(self.config, self.save_dir / 'config.json')

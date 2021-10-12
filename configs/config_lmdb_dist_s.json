@@ -6,7 +6,7 @@
 
     "distributed":true,
     "local_world_size":4,
-    "local_rank":0,
+    "local_rank":-1,
     "global_rank":-1,
 
     "deterministic":false,
@@ -105,9 +105,9 @@
         "max_len_step":null,
 
         "do_validation": true,
-        "validation_start_epoch": 10,
+        "validation_start_epoch": 4,
         "log_step_interval": 1,
-        "val_step_interval": 12000,
+        "val_step_interval": 10000,
 
         "train_batch_size": 128,
         "val_batch_size":128,

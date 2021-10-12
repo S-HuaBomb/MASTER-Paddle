@@ -173,8 +173,6 @@ class Trainer:
             # every epoch log information
             self.logger_info('[Epoch End] Epoch:[{}/{}] Loss: {:.6f} LR: {:.8f}'.
                              format(epoch, self.epochs, result_dict['loss'], self.optimizer.get_lr()) + val_res)
-            print('[Epoch End] Epoch:[{}/{}] Loss: {:.6f} LR: {:.8f}'.
-                  format(epoch, self.epochs, result_dict['loss'], self.optimizer.get_lr()) + val_res)
 
             # evaluate model performance according to configured metric, check early stop, and
             # save best checkpoint as model_best
@@ -186,7 +184,7 @@ class Trainer:
                                      "Training stops.".format(self.early_stop))
                     break
             # epoch-level save period
-            if best or (epoch % self.save_period == 0 and epoch >= self.validation_start_epoch):
+            if best or (epoch % self.save_period == 0):  #  and epoch >= self.validation_start_epoch
                 self._save_checkpoint(epoch, save_best=best)
 
     def _is_best_monitor_metric(self, best, not_improved_count, val_result_dict, update_not_improved_count=True):
@@ -276,7 +274,7 @@ class Trainer:
                 # import pdb;pdb.set_trace()
                 # reduced_metrics_tensor = self.mean_reduce_tensor(reduced_metrics_tensor)
                 reduced_metrics_tensor = self.sum_tesnor(reduced_metrics_tensor)
-                batch_total, reduced_loss = reduced_metrics_tensor.cpu().numpy()
+                batch_total, reduced_loss = reduced_metrics_tensor.numpy()
                 reduced_loss = reduced_loss / dist.get_world_size()
             # update metrics and write to tensorboard
             global_step = (epoch - 1) * self.len_step + step_idx - 1
@@ -292,10 +290,6 @@ class Trainer:
                         format(epoch, self.epochs, step_idx, self.len_step,
                                self.train_metrics.val('loss'),
                                self.train_metrics.avg('loss'), self.optimizer.get_lr()))
-                print('Train Epoch:[{}/{}] Step:[{}/{}] Loss: {:.6f} Loss_avg: {:.6f} LR: {:.8f}'.
-                      format(epoch, self.epochs, step_idx, self.len_step,
-                             self.train_metrics.val('loss'),
-                             self.train_metrics.avg('loss'), self.optimizer.get_lr()))
                 # self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
             # do validation after val_step_interval iteration
@@ -308,11 +302,7 @@ class Trainer:
                         format(epoch, self.epochs, step_idx, self.len_step,
                                val_metric_res_dict['word_acc'], val_metric_res_dict['word_acc_case_insensitive'],
                                val_metric_res_dict['edit_distance_acc']))
-                print('[Step Validation] Epoch:[{}/{}] Step:[{}/{}] Word_acc: {:.6f} Word_acc_case_ins {:.6f}'
-                      'Edit_distance_acc: {:.6f}'.
-                      format(epoch, self.epochs, step_idx, self.len_step,
-                             val_metric_res_dict['word_acc'], val_metric_res_dict['word_acc_case_insensitive'],
-                             val_metric_res_dict['edit_distance_acc']))
+
                 # check if best metric, if true, then save as model_best checkpoint.
                 best, not_improved_count = self._is_best_monitor_metric(False, 0, val_metric_res_dict,
                                                                         update_not_improved_count=False)
@@ -467,7 +457,7 @@ class Trainer:
         # # Use a barrier() to make sure that all process have finished above code
         # dist.barrier()
         sum_metrics_tensor = self.sum_tesnor(sum_metrics_tensor)
-        sum_metrics_tensor = sum_metrics_tensor.cpu().numpy()
+        sum_metrics_tensor = sum_metrics_tensor.numpy()
         batch_total, valid_batches = sum_metrics_tensor[0:2]
         # averages metric across the valid process
         # loss= sum_metrics_tensor[2] / valid_batches
@@ -580,14 +570,12 @@ class Trainer:
             filename = str(self.checkpoint_dir / 'checkpoint-epoch{}-step{}.pth'.format(epoch, step_idx))
         paddle.save(state, filename)
         self.logger_info("Saving checkpoint: {} ...".format(filename))
-        print("Saving checkpoint: {} ...".format(filename))
 
         if save_best:
             best_path = str(self.checkpoint_dir / 'model_best.pth')
             shutil.copyfile(filename, best_path)
             self.logger_info(
                 f"Saving current best (at {epoch} epoch): model_best.pth Best {self.monitor_metric}: {self.monitor_best:.6f}")
-            print(f"Saving current best (at {epoch} epoch): model_best.pth Best {self.monitor_metric}: {self.monitor_best:.6f}")
 
         # if save_best:
         #     best_path = str(self.checkpoint_dir / 'model_best.pth')

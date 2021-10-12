@@ -45,28 +45,32 @@ def main(config: ConfigParser, local_master: bool, logger=None):
 
     if train_sampler is not None:
         train_data_loader = paddle.io.DataLoader(
-                                            dataset=train_dataset,
-                                            batch_sampler=train_sampler,
-                                            collate_fn=DistCollateFn(training=True),
-                                            num_workers=train_num_workers,)
+            dataset=train_dataset,
+            batch_sampler=train_sampler,
+            collate_fn=DistCollateFn(training=True),
+            num_workers=train_num_workers, )
     else:
         train_data_loader = paddle.io.DataLoader(
-                                            dataset=train_dataset,
-                                            batch_size=train_batch_size,
-                                            collate_fn=DistCollateFn(training=True),
-                                            num_workers=train_num_workers,
-                                            shuffle=True)
+            dataset=train_dataset,
+            batch_size=train_batch_size,
+            collate_fn=DistCollateFn(training=True),
+            num_workers=train_num_workers,
+            shuffle=True)
     val_dataset = config.init_obj('val_dataset', master_dataset,
                                   transform=master_dataset.CustomImagePreprocess(img_h, img_w, convert_to_gray),
                                   convert_to_gray=convert_to_gray)
-    val_sampler = DistValSampler(list(range(len(val_dataset))), batch_size=val_batch_size,
-                                 distributed=config['distributed'])
+    if config['distributed']:
+        val_sampler = paddle.io.DistributedBatchSampler(dataset=val_dataset, batch_size=val_batch_size, shuffle=True)
+    else:
+        val_sampler = DistValSampler(list(range(len(val_dataset))), batch_size=val_batch_size,
+                                     distributed=config['distributed'])
+
     val_data_loader = paddle.io.DataLoader(
-                                      dataset=val_dataset,
-                                      batch_sampler=val_sampler,
-                                      batch_size=1,
-                                      collate_fn=DistCollateFn(training=True),
-                                      num_workers=val_num_workers)
+        dataset=val_dataset,
+        batch_sampler=val_sampler,
+        batch_size=1,
+        collate_fn=DistCollateFn(training=True),
+        num_workers=val_num_workers)
 
     logger.info(f'Dataloader instances have finished. Train datasets: {len(train_dataset)} '
                 f'Val datasets: {len(val_dataset)} Train_batch_size/gpu: {train_batch_size} '
@@ -163,7 +167,7 @@ def entry_point(config: ConfigParser):
         # log distributed training cfg
         logger.info(
             f'[Process {os.getpid()}] world_size = {dist.get_world_size()}, '
-            + f'rank = {dist.get_rank()}, backend={dist.get_backend()}'
+            + f'rank = {dist.get_rank()}'
         ) if local_master else None
 
     # start train
