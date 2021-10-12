@@ -98,7 +98,7 @@ class Trainer:
             # sync_batch_norm only support one gpu per process mode
             self.model = paddle.nn.SyncBatchNorm.convert_sync_batchnorm(self.model)
 
-        if self.distributed:  # move model to distributed gpu ##############################################
+        if self.distributed:  # move model to distributed gpu
             # 第3处改动，增加paddle.DataParallel封装
             self.model = paddle.DataParallel(self.model, find_unused_parameters=True)
             # self.model = DDP(self.model, device_ids=self.device_ids, output_device=self.device_ids[0],
@@ -156,6 +156,7 @@ class Trainer:
 
             # validate after training an epoch
             if self.do_validation and epoch >= self.validation_start_epoch:
+                print(f"validate after training epoch {epoch}")
                 val_metric_res_dict = self._valid_epoch(epoch)
                 # import pdb;pdb.set_trace()
                 val_res = f"\nValidation result after {epoch} epoch: " \
@@ -170,11 +171,10 @@ class Trainer:
                 self.lr_scheduler.step()
 
             # every epoch log information
-            self.logger_info(
-                '[Epoch End] Epoch:[{}/{}] Loss: {:.6f} LR: {:.8f}'.
-                format(epoch, self.epochs,
-                       result_dict['loss'], self.optimizer.get_lr()) + val_res
-            )
+            self.logger_info('[Epoch End] Epoch:[{}/{}] Loss: {:.6f} LR: {:.8f}'.
+                             format(epoch, self.epochs, result_dict['loss'], self.optimizer.get_lr()) + val_res)
+            print('[Epoch End] Epoch:[{}/{}] Loss: {:.6f} LR: {:.8f}'.
+                  format(epoch, self.epochs, result_dict['loss'], self.optimizer.get_lr()) + val_res)
 
             # evaluate model performance according to configured metric, check early stop, and
             # save best checkpoint as model_best
@@ -292,10 +292,15 @@ class Trainer:
                         format(epoch, self.epochs, step_idx, self.len_step,
                                self.train_metrics.val('loss'),
                                self.train_metrics.avg('loss'), self.optimizer.get_lr()))
+                print('Train Epoch:[{}/{}] Step:[{}/{}] Loss: {:.6f} Loss_avg: {:.6f} LR: {:.8f}'.
+                      format(epoch, self.epochs, step_idx, self.len_step,
+                             self.train_metrics.val('loss'),
+                             self.train_metrics.avg('loss'), self.optimizer.get_lr()))
                 # self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
             # do validation after val_step_interval iteration
             if self.do_validation and step_idx % self.val_step_interval == 0 and epoch >= self.validation_start_epoch:
+                print(f"validate in epoch {epoch}")
                 val_metric_res_dict = self._valid_epoch(epoch)  # average metric
                 self.logger_info(
                     '[Step Validation] Epoch:[{}/{}] Step:[{}/{}] Word_acc: {:.6f} Word_acc_case_ins {:.6f}'
@@ -303,6 +308,11 @@ class Trainer:
                         format(epoch, self.epochs, step_idx, self.len_step,
                                val_metric_res_dict['word_acc'], val_metric_res_dict['word_acc_case_insensitive'],
                                val_metric_res_dict['edit_distance_acc']))
+                print('[Step Validation] Epoch:[{}/{}] Step:[{}/{}] Word_acc: {:.6f} Word_acc_case_ins {:.6f}'
+                      'Edit_distance_acc: {:.6f}'.
+                      format(epoch, self.epochs, step_idx, self.len_step,
+                             val_metric_res_dict['word_acc'], val_metric_res_dict['word_acc_case_insensitive'],
+                             val_metric_res_dict['edit_distance_acc']))
                 # check if best metric, if true, then save as model_best checkpoint.
                 best, not_improved_count = self._is_best_monitor_metric(False, 0, val_metric_res_dict,
                                                                         update_not_improved_count=False)
@@ -342,8 +352,8 @@ class Trainer:
                     # target = target.to(self.device)
                     # target = target.permute(1, 0)
 
-                    if hasattr(self.model, 'module'):
-                        model = self.model.module  # fdf
+                    if hasattr(self.model, '_layers'):
+                        model = self.model._layers  # fdf
                     else:
                         model = self.model
 
@@ -352,7 +362,7 @@ class Trainer:
                                                                             LabelTransformer.SOS,
                                                                             LabelTransformer.EOS,
                                                                             _padding_symbol_index=LabelTransformer.PAD,
-                                                                            _result_device=images.device,
+                                                                            _result_device=paddle.get_device(),
                                                                             _is_padding=True)
                     correct = 0
                     correct_case_ins = 0
@@ -415,15 +425,15 @@ class Trainer:
                 # target = target.to(self.device)
                 # target = target.permute(1, 0)
 
-                if hasattr(self.model, 'module'):
-                    model = self.model.module
+                if hasattr(self.model, '_layers'):
+                    model = self.model._layers
                 else:
                     model = self.model
                 outputs, _ = decode_util.greedy_decode_with_probability(model, images, LabelTransformer.max_length,
                                                                         LabelTransformer.SOS,
                                                                         LabelTransformer.EOS,
                                                                         _padding_symbol_index=LabelTransformer.PAD,
-                                                                        _result_device=images.device,
+                                                                        _result_device=paddle.get_device(),
                                                                         _is_padding=True)
 
                 for index, (pred, text_gold) in enumerate(zip(outputs[:, 1:], text_label)):
@@ -550,9 +560,9 @@ class Trainer:
         if not (self.local_master and self.global_master):
             return
 
-        if hasattr(self.model, 'module'):
-            arch_name = type(self.model.module).__name__
-            model_state_dict = self.model.module.state_dict()
+        if hasattr(self.model, '_layers'):
+            arch_name = type(self.model._layers).__name__
+            model_state_dict = self.model._layers.state_dict()
         else:
             arch_name = type(self.model).__name__
             model_state_dict = self.model.state_dict()
@@ -570,12 +580,14 @@ class Trainer:
             filename = str(self.checkpoint_dir / 'checkpoint-epoch{}-step{}.pth'.format(epoch, step_idx))
         paddle.save(state, filename)
         self.logger_info("Saving checkpoint: {} ...".format(filename))
+        print("Saving checkpoint: {} ...".format(filename))
 
         if save_best:
             best_path = str(self.checkpoint_dir / 'model_best.pth')
             shutil.copyfile(filename, best_path)
             self.logger_info(
                 f"Saving current best (at {epoch} epoch): model_best.pth Best {self.monitor_metric}: {self.monitor_best:.6f}")
+            print(f"Saving current best (at {epoch} epoch): model_best.pth Best {self.monitor_metric}: {self.monitor_best:.6f}")
 
         # if save_best:
         #     best_path = str(self.checkpoint_dir / 'model_best.pth')

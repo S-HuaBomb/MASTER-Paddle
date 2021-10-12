@@ -36,6 +36,7 @@ class ConfigParser:
                 or (not self.config['distributed']):  # only local master process create saved output dir
             # set save_dir where trained model and log will be saved.
             save_dir = Path(self.config['trainer']['save_dir'])
+            log_dir = Path(self.config['trainer']['log_dir'])
 
             exper_name = self.config['name']
             if run_id is None:  # use timestamp as default run-id
@@ -43,7 +44,10 @@ class ConfigParser:
             else:
                 run_id = run_id + '_' + datetime.now().strftime(r'%m%d_%H%M%S')
             self._save_dir = save_dir / 'models' / exper_name / run_id
-            self._log_dir = save_dir / 'log' / exper_name / run_id
+            if self.config['distributed']:
+                self._log_dir = log_dir
+            else:
+                self._log_dir = save_dir / 'log' / exper_name / run_id
 
             # make directory for saving checkpoints and log.
             exist_ok = run_id == ''

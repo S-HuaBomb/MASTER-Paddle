@@ -68,16 +68,16 @@ def predict(args):
         images = input_data_item['images']
         file_names = input_data_item['file_names']
         with paddle.no_grad():
-            if hasattr(model, 'module'):
-                model = model.module
+            if hasattr(model, '_layers'):
+                model = model._layers
             # (bs, max_len)
             # TODO replace with memory-cache based decode
             outputs, probs = decode_util.greedy_decode_with_probability(model, images, LabelTransformer.max_length,
                                                                         LabelTransformer.SOS,
                                                                         LabelTransformer.EOS,
                                                                         _padding_symbol_index=LabelTransformer.PAD,
-                                                                        _result_device=images.device, _is_padding=True)
-
+                                                                        _result_device=paddle.get_device(),
+                                                                        _is_padding=True)
 
         for index, (pred, prob, img_name) in enumerate(zip(outputs[:, 1:], probs, file_names)):
             predict_text = ""
