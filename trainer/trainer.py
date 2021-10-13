@@ -167,8 +167,8 @@ class Trainer:
                 val_res = ''
 
             # update lr after training an epoch, epoch-wise
-            if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
-                self.lr_scheduler.step()
+            # if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
+            #     self.lr_scheduler.step()
 
             # every epoch log information
             self.logger_info('[Epoch End] Epoch:[{}/{}] Loss: {:.6f} LR: {:.8f}'.
@@ -184,7 +184,7 @@ class Trainer:
                                      "Training stops.".format(self.early_stop))
                     break
             # epoch-level save period
-            if best or (epoch % self.save_period == 0):  #  and epoch >= self.validation_start_epoch
+            if best or (epoch % self.save_period == 0):  # and epoch >= self.validation_start_epoch
                 self._save_checkpoint(epoch, save_best=best)
 
     def _is_best_monitor_metric(self, best, not_improved_count, val_result_dict, update_not_improved_count=True):
@@ -234,10 +234,6 @@ class Trainer:
             images = input_data_item['images']
             text_label = input_data_item['labels']
 
-            # step-wise lr scheduler, comment this, using epoch-wise lr_scheduler
-            # if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
-            #     self.lr_scheduler.step()
-
             # for step_idx in range(self.len_step):
             step_idx += 1
             # import pdb;pdb.set_trace()
@@ -257,7 +253,6 @@ class Trainer:
             self.optimizer.clear_grad()
 
             ## Train batch done. Logging results
-
             # due to training mode (bn, dropout), we don't calculate acc
 
             batch_total = images.shape[0]
@@ -282,14 +277,18 @@ class Trainer:
             # write tag is loss/train (mode =train)
             self.train_metrics.update('loss', reduced_loss,
                                       batch_total)  # here, loss is mean results over batch, accumulate values
+            avg_loss = self.train_metrics.avg('loss')
+
+            # step-wise lr scheduler, comment this, using epoch-wise lr_scheduler
+            if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
+                self.lr_scheduler.step(paddle.to_tensor(avg_loss))  # 可以是Tensor或者numpy.array，但是shape必须为[1]，也可以是Python的float类型。
 
             # log messages
             if step_idx % self.log_step == 0 or step_idx == 1:
                 self.logger_info(
                     'Train Epoch:[{}/{}] Step:[{}/{}] Loss: {:.6f} Loss_avg: {:.6f} LR: {:.8f}'.
                         format(epoch, self.epochs, step_idx, self.len_step,
-                               self.train_metrics.val('loss'),
-                               self.train_metrics.avg('loss'), self.optimizer.get_lr()))
+                               self.train_metrics.val('loss'), avg_loss, self.optimizer.get_lr()))
                 # self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
             # do validation after val_step_interval iteration
@@ -543,7 +542,7 @@ class Trainer:
         '''
         Saving checkpoints
         :param epoch:  current epoch number
-        :param save_best: if True, rename the saved checkpoint to 'model_best.pth'
+        :param save_best: if True, rename the saved checkpoint to 'model_best.pdparams'
         :return:
         '''
         # only both local and global master process do save model
@@ -565,25 +564,25 @@ class Trainer:
             'config': self.config
         }
         if step_idx is None:
-            filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pth'.format(epoch))
+            filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pdparams'.format(epoch))
         else:
-            filename = str(self.checkpoint_dir / 'checkpoint-epoch{}-step{}.pth'.format(epoch, step_idx))
+            filename = str(self.checkpoint_dir / 'checkpoint-epoch{}-step{}.pdparams'.format(epoch, step_idx))
         paddle.save(state, filename)
         self.logger_info("Saving checkpoint: {} ...".format(filename))
 
         if save_best:
-            best_path = str(self.checkpoint_dir / 'model_best.pth')
+            best_path = str(self.checkpoint_dir / 'model_best.pdparams')
             shutil.copyfile(filename, best_path)
             self.logger_info(
-                f"Saving current best (at {epoch} epoch): model_best.pth Best {self.monitor_metric}: {self.monitor_best:.6f}")
+                f"Saving current best (at {epoch} epoch): model_best.pdparams Best {self.monitor_metric}: {self.monitor_best:.6f}")
 
         # if save_best:
-        #     best_path = str(self.checkpoint_dir / 'model_best.pth')
+        #     best_path = str(self.checkpoint_dir / 'model_best.pdparams')
         #     torch.save(state, best_path)
         #     self.logger_info(
-        #         f"Saving current best: model_best.pth Best {self.monitor_metric}: {self.monitor_best:.6f}.")
+        #         f"Saving current best: model_best.pdparams Best {self.monitor_metric}: {self.monitor_best:.6f}.")
         # else:
-        #     filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pth'.format(epoch))
+        #     filename = str(self.checkpoint_dir / 'checkpoint-epoch{}.pdparams'.format(epoch))
         #     torch.save(state, filename)
         #     self.logger_info("Saving checkpoint: {} ...".format(filename))
 

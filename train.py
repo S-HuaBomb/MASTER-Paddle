@@ -85,8 +85,18 @@ def main(config: ConfigParser, local_master: bool, logger=None):
     logger.info(f'Model created, trainable parameters: {model.model_parameters()}.') if local_master else None
 
     learning_rate = config['optimizer']['args']['lr']  # 0.0004
-    if config['lr_scheduler']['type'] is not None:
-        lr_scheduler = optim.lr.StepDecay(learning_rate=learning_rate, step_size=30, gamma=0.8, verbose=True)
+    step_size = config['lr_scheduler']['args']['step_size']  # 1000
+    gamma = config['lr_scheduler']['args']['gamma']  # 0.5
+    if config['lr_scheduler']['type'] is not None and config['distributed']:
+        # lr_scheduler = optim.lr.StepDecay(learning_rate=learning_rate, step_size=step_size, gamma=gamma, verbose=True)
+        # lr_scheduler = paddle.optimizer.lr.LinearWarmup(learning_rate=learning_rate,
+        #                                                 warmup_steps=step_size,
+        #                                                 start_lr=0.0001,
+        #                                                 end_lr=learning_rate,
+        #                                                 verbose=True)
+        # 在 2000 个 step 后 loss 不下降，则学习率降为当前的 0.5倍，最小降到 0.0001
+        lr_scheduler = optim.lr.ReduceOnPlateau(learning_rate=learning_rate, mode='min',
+                                                factor=gamma, patience=step_size, min_lr=0.0001, verbose=True)
     else:
         lr_scheduler = learning_rate
 

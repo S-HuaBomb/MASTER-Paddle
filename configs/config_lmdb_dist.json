@@ -89,14 +89,14 @@
     "optimizer": {
           "type": "Adam",
           "args":{
-              "lr": 0.0016
+              "lr": 0.0004
           }
     },
     "lr_scheduler": {
-        "type": null,
+        "type": "ReduceOnPlateau",
         "args": {
-            "step_size": 10,
-            "gamma": 0.1
+            "step_size": 1000,
+            "gamma": 0.5
         }
     },
 
