@@ -283,7 +283,8 @@ python -m paddle.distributed.launch --gpus '0,1,2,3' MASTER/train.py -c MASTER/c
 
 #### Testing
 
-**训练好的最终模型可到百度网盘自取：[celeba_cropped_s5_i96000](https://pan.baidu.com/s/1-wvYpLYiEUGpBi3xT31roA )**，提取码：6nv9。
+*现在只训练完成了 6 个 epoch*
+**训练好的模型可到百度网盘自取：[ckpts/checkpoint-epochX.pdparams](https://pan.baidu.com/s/1nUwv6Q49nM2DT7PxWNsZWw)**，提取码：5qyu。
 
 指定模型的路径和需要用于识别文本的图片文件夹：
 ```shell
