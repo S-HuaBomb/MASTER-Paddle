@@ -93,9 +93,9 @@
           }
     },
     "lr_scheduler": {
-        "type": "ReduceOnPlateau",
+        "type": "LinearWarmup",
         "args": {
-            "step_size": 1000,
+            "step_size": 2,
             "gamma": 0.5
         }
     },
@@ -105,7 +105,7 @@
         "max_len_step":null,
 
         "do_validation": true,
-        "validation_start_epoch": 10,
+        "validation_start_epoch": 2,
         "log_step_interval": 1,
         "val_step_interval": 12000,
 
@@ -116,7 +116,7 @@
 
         "save_dir": "/root/paddlejob/workspace/output/",
         "log_dir": "/root/paddlejob/workspace/log/",
-        "save_period": 4,
+        "save_period": 2,
         "log_verbosity": 2,
 
         "monitor": "max word_acc",

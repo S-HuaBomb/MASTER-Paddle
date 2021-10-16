@@ -60,7 +60,7 @@ def predict(args):
     result_output_file = output_path.joinpath(args.output_file_name)
     pred_results = []
     # predict and save to file
-    for step_idx, input_data_item in tqdm(enumerate(test_data_loader),total=len(test_data_loader)):
+    for step_idx, input_data_item in tqdm(enumerate(test_data_loader), total=len(test_data_loader)):
         batch_size = input_data_item['batch_size']
         if batch_size == 0:
             continue
@@ -113,9 +113,9 @@ if __name__ == '__main__':
     args.add_argument('-index_txt_file', '--index_txt_file', default=None, type=str, required=False,
                       help='path to index txt and corresponding filename, '
                            'if None, read img from img_folder, otherwise, index_txt_file must be set (default: None)')
-    args.add_argument('-width', '--width', default=256, type=int, required=False,
+    args.add_argument('-width', '--width', default=160, type=int, required=False,
                       help='resized image width (default: 256)')
-    args.add_argument('-height', '--height', default=32, type=int, required=False,
+    args.add_argument('-height', '--height', default=48, type=int, required=False,
                       help='resized image height (default: 32)')
     args.add_argument('-output', '--output_folder', default='predict_results', type=str, required=False,
                       help='output folder (default: predict_results)')

@@ -167,8 +167,8 @@ class Trainer:
                 val_res = ''
 
             # update lr after training an epoch, epoch-wise
-            # if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
-            #     self.lr_scheduler.step()
+            if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
+                self.lr_scheduler.step()
 
             # every epoch log information
             self.logger_info('[Epoch End] Epoch:[{}/{}] Loss: {:.6f} LR: {:.8f}'.
@@ -280,8 +280,8 @@ class Trainer:
             avg_loss = self.train_metrics.avg('loss')
 
             # step-wise lr scheduler, comment this, using epoch-wise lr_scheduler
-            if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
-                self.lr_scheduler.step(paddle.to_tensor(avg_loss))  # 可以是Tensor或者numpy.array，但是shape必须为[1]，也可以是Python的float类型。
+            # if isinstance(self.lr_scheduler, paddle.optimizer.lr.LRScheduler):
+            #     self.lr_scheduler.step(paddle.to_tensor(avg_loss))  # 可以是Tensor或者numpy.array，但是shape必须为[1]，也可以是Python的float类型。
 
             # log messages
             if step_idx % self.log_step == 0 or step_idx == 1:
@@ -596,7 +596,7 @@ class Trainer:
         self.logger_info("Loading checkpoint: {} ...".format(resume_path))
         # map_location = {'cuda:%d' % 0: 'cuda:%d' % self.config['local_rank']}
         checkpoint = paddle.load(resume_path)
-        self.start_epoch = checkpoint['epoch'] + 1 if not self.finetune else 1
+        self.start_epoch = 0  # checkpoint['epoch'] + 1 if not self.finetune else 1
         self.monitor_best = checkpoint['monitor_best']
 
         # load architecture params from checkpoint.
