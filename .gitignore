@@ -1,3 +1,4 @@
+logs/*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -36,50 +37,6 @@ wheels/
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
 # dotenv
 .env
 
@@ -88,18 +45,11 @@ celerybeat-schedule
 venv/
 ENV/
 
-# Spyder project settings
-.spyderproject
-.spyproject
-
 # Rope project settings
 .ropeproject
 
 # mkdocs documentation
 /site
-
-# mypy
-.mypy_cache/
 
 # input data, saved log, checkpoints
 input/
@@ -109,6 +59,4 @@ saved/
 .vscode/
 .idea/
 __MACOSX/
-/logs/
-/pred_results/
-/tmp/
+
