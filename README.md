@@ -284,6 +284,7 @@ python -m paddle.distributed.launch --gpus '0,1,2,3' MASTER/train.py -c MASTER/c
 #### Testing
 
 *现在只训练完成了 6 个 epoch*
+
 **训练好的模型可到百度网盘自取：[ckpts/checkpoint-epochX.pdparams](https://pan.baidu.com/s/1nUwv6Q49nM2DT7PxWNsZWw)**，提取码：5qyu。
 
 指定模型的路径和需要用于识别文本的图片文件夹：
@@ -299,6 +300,7 @@ python test.py --checkpoint path/to/checkpoint --img_folder path/to/img_folder \
 
 #### Evaluation
 *训练没有完成，还未测试过此处的代码*
+
 我们需要运行上面的 Testing 得到预测结果之后才能运行 Evaluation 来计算准确率。
 
 运行：
