@@ -384,7 +384,7 @@ python utils/calculate_metrics.py --predict-path predict_result.json --label-pat
 | 框架版本 | paddlepaddle==2.1.2 |
 | 应用场景 | 多场景文本识别 |
 | 支持硬件 | GPU × 4 |
-| CELEBA数据集下载 | 百度网盘 [data_lmdb_release.zip](https://pan.baidu.com/s/1KSNLv4EY3zFWHpBYlpFCBQ)，提取码：`rryk` |
+| data_lmdb_release 数据集下载 | 百度网盘 [data_lmdb_release.zip](https://pan.baidu.com/s/1KSNLv4EY3zFWHpBYlpFCBQ)，提取码：`rryk` |
 | AI Studio 地址 | [https://aistudio.baidu.com/aistudio/projectdetail/2351963](https://aistudio.baidu.com/aistudio/projectdetail/2351963) |
 
 ## Citations
