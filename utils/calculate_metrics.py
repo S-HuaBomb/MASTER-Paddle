@@ -60,11 +60,9 @@ def main(args):
     with open(parameters.label_path, encoding='utf-8') as f:
         lines = f.readlines()
         for line in lines:
-            line = line.strip().rstrip("\n")
-            lineobj = json.loads(line)
-            text_label = lineobj['Label']
-            ImageFile = lineobj['ImageFile']
-            label_gold_dict[ImageFile] = text_label
+            line = line.strip().rstrip("\n").split(',')
+            # print('line:', line)
+            label_gold_dict[line[0]] = line[1]
 
     hold_history = []
 
@@ -100,7 +98,7 @@ def main(args):
             # label_gold = label_gold.strip()
             total_edit_distance +=len(label_gold)
             total_ref += len(label_gold)
-
+    # print(total_correct_num)
     logging.info('Sequence Accuracy: %f Case_ins: %f' % (float(total_correct_num) / len(label_gold_dict.keys()),
                                                          float(total_correct_num_case_ins) / len(label_gold_dict.keys())))
     logging.info('Edit Distance Accuracy: %f' % (1. - float(total_edit_distance) / total_ref))

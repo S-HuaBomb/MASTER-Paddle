@@ -68,8 +68,8 @@
     "val_dataset": {
         "type": "hierarchy_dataset",
         "args": {
-            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release",
-            "select_data": "validation",
+            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release/training/MJ",
+            "select_data": "MJ_test-MJ_valid",
             "img_w":160,
             "img_h":48,
             "training":true
@@ -95,7 +95,7 @@
     "lr_scheduler": {
         "type": "LinearWarmup",
         "args": {
-            "step_size": 2,
+            "step_size": 10000,
             "gamma": 0.5
         }
     },
