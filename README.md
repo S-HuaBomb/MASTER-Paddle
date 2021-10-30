@@ -49,17 +49,17 @@
 | distributed | true | 强烈推荐使用多卡训练 |
 | local_world_size | 4 | 4 卡刚刚好
 | local_rank | 0 | 主卡 |
-| n_class | 62 | 文本类数：10 个阿拉伯数字 + 52 个区分大小写的英文字母 + 4 个文档描述符（这 4 个类竟然是代码里硬生生加上 4），还好我聪明及时发现 :blush: |
+| n_class | 62 | 文本类数：10 个阿拉伯数字 + 52 个区分大小写的英文字母 + 4 个文档描述符（这 4 个类竟然是代码里硬生生加上 4）:blush: |
 | with_encoder | false |  with_encoder? false |
 |model_size | 512 | 编码器的输出尺寸 |
-| ratio | 0.0625 | 转圈圈 |
+| ratio | 0.0625 |  |
 | dropout | 0.2 | dropout  |
 | feed_forward_size | 2048 | dff 前馈模块设置为2048| 
 | multiheads | 8 | 多头注意力数是 8 |
 | batch_size | 128 | bs = 128 单卡占用不到 16 GB 显存|
 | num_workers | 2 | dataloader workers |
 | epochs | 16 | 论文说 12 个 epoch 就好了 |
-| lr | 0.0004 |这是 4 卡并行情况下。单卡情况下是 0.0001，全程保持不变 |
+| lr | 0.0004 | 4 卡并行情况下。单卡情况下 lr 是 0.0001，全程保持不变 |
 | lr_scheduler | LinearWarmup | 最好利用 lr warm-up 来训练，我猜的 |
 | img_w | 160 | 图片裁剪宽度|
 | img_h | 48 | 图片裁剪宽度 |
@@ -122,140 +122,8 @@
 	    ├── lock.mdb                
 ```
 
-在 `configs/config_lmdb_dist.json` 中修改训练配置，以下是我的训练配置（4 × Tesla V100）：
-```json
-{
-    "name": "MASTER_Default",
-    "run_id":"example",
+在 `configs/config_lmdb_dist.json` 中修改训练配置
 
-    "finetune":false,
-
-    "distributed":true,
-    "local_world_size":4,
-    "local_rank":0,
-    "global_rank":-1,
-
-    "deterministic":false,
-    "seed":123,
-
-    "model_arch": {
-        "type": "MASTER",
-        "args": {
-            "common_kwargs":{
-                "n_class":62,
-                "with_encoder":false,
-                "model_size": 512,
-                "multiheads": 8
-            },
-            "backbone_kwargs":{
-                "in_channels": 3,
-                "gcb_kwargs":{
-                    "ratio": 0.0625,
-                    "headers": 1,
-                    "att_scale": true,
-                    "fusion_type": "channel_concat",
-                    "layers":[false, true, true, true]
-                }
-            },
-            "encoder_kwargs":{
-                "stacks": 3,
-                "dropout": 0.2,
-                "feed_forward_size": 2048
-            },
-            "decoder_kwargs":{
-                "stacks": 3,
-                "dropout": 0.2,
-                "feed_forward_size": 2048
-            }
-        }
-    },
-
-    "train_dataset": {
-        "type": "hierarchy_dataset",
-        "args": {
-            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release/training",
-            "select_data": "MJ/MJ_train-ST",
-            "img_w":160,
-            "img_h":48,
-            "training":true
-        }
-    },
-    "train_loader": {
-        "type": "DataLoader",
-        "args":{
-            "batch_size": 32,
-            "shuffle": true,
-            "drop_last": true,
-            "num_workers": 8,
-            "pin_memory":false
-        }
-    },
-
-    "val_dataset": {
-        "type": "hierarchy_dataset",
-        "args": {
-            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release",
-            "select_data": "validation",
-            "img_w":160,
-            "img_h":48,
-            "training":true
-        }
-    },
-    "val_loader": {
-          "type": "DataLoader",
-          "args":{
-              "batch_size": 32,
-              "shuffle": false,
-              "drop_last": false,
-              "num_workers": -1,
-              "pin_memory":false
-          }
-      },
-
-    "optimizer": {
-          "type": "Adam",
-          "args":{
-              "lr": 0.0004
-          }
-    },
-    "lr_scheduler": {
-        "type": "LinearWarmup",
-        "args": {
-            "step_size": 3,
-            "gamma": 0.5
-        }
-    },
-
-    "trainer": {
-        "epochs": 16,
-        "max_len_step":null,
-
-        "do_validation": true,
-        "validation_start_epoch": 4,
-        "log_step_interval": 1,
-        "val_step_interval": 12000,
-
-        "train_batch_size": 128,
-        "val_batch_size":128,
-        "train_num_workers":2,
-        "val_num_workers":2,
-
-        "save_dir": "/root/paddlejob/workspace/output/",
-        "log_dir": "/root/paddlejob/workspace/log/",
-        "save_period": 4,
-        "log_verbosity": 2,
-
-        "monitor": "max word_acc",
-        "monitor_open": true,
-        "early_stop": -1,
-
-        "anomaly_detection": false,
-        "tensorboard": false,
-
-        "sync_batch_norm":true
-    }
-}
-```
 > 源码的默认配置是跑不起来的，比如 `local_rank=-1` 在多卡训练的时候代码会对这个变量做判断，然后跳过创建输出文件夹的一段代码，导致模型没有保存任何东西。一开始 `n_class=-1` 也是不对的，这个变量要指定训练集中出现的所有字符的类数，论文指出有 66 类。`lr=0.0004` 是 4 卡训练的配置，单卡是 0.0001。`lr_scheduler` 是我自己加的学习率预热 [`paddle.optimizer.lr.LinearWarmup`](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/lr/ReduceOnPlateau_cn.html)。`epochs=16`，论文指出 4 卡训练 12 个 epochs 即可完成。**若要单卡训练（debug），只需设置 `"distributed":false`**。
     
 #### step2: 运行训练
@@ -355,6 +223,17 @@ python utils/calculate_metrics.py --predict-path predict_result.json --label-pat
 [2021-10-12 18:46:42,409 - trainer - INFO] - Train Epoch:[1/16] Step:[3/24898] Loss: 5.376784 Loss_avg: 5.565304 LR: 0.00040000
 [2021-10-12 18:46:43,452 - trainer - INFO] - Train Epoch:[1/16] Step:[4/24898] Loss: 5.122001 Loss_avg: 5.404478 LR: 0.00040000
 [2021-10-12 18:46:44,505 - trainer - INFO] - Train Epoch:[1/16] Step:[5/24898] Loss: 4.696676 Loss_avg: 4.262918 LR: 0.00040000
+...
+[2021-10-29 22:29:25,506 - trainer - INFO] - Train Epoch:[3/16] Step:[23998/24898] Loss: 0.023410 Loss_avg: 0.018408 LR: 0.00040000
+[2021-10-29 22:29:26,575 - trainer - INFO] - Train Epoch:[3/16] Step:[23999/24898] Loss: 0.020146 Loss_avg: 0.018408 LR: 0.00040000
+[2021-10-29 22:29:27,641 - trainer - INFO] - Train Epoch:[3/16] Step:[24000/24898] Loss: 0.014127 Loss_avg: 0.018408 LR: 0.00040000
+validate in epoch 3
+[2021-10-30 06:14:34,656 - trainer - INFO] - [Step Validation] Epoch:[3/16] Step:[24000/24898] Word_acc: 0.961988 Word_acc_case_ins 0.976946Edit_distance_acc: 0.980846
+[2021-10-30 06:14:36,834 - trainer - INFO] - Saving checkpoint: /root/paddlejob/workspace/output/models/MASTER_Default/example_1027_102421/checkpoint-epoch3-step24000.pdparams ...
+[2021-10-30 06:14:42,358 - trainer - INFO] - Saving current best (at 3 epoch): model_best.pdparams Best word_acc: 0.961988
+[2021-10-30 06:14:43,426 - trainer - INFO] - Train Epoch:[3/16] Step:[24001/24898] Loss: 0.004725 Loss_avg: 0.018407 LR: 0.00040000
+[2021-10-30 06:14:44,489 - trainer - INFO] - Train Epoch:[3/16] Step:[24002/24898] Loss: 0.016075 Loss_avg: 0.018407 LR: 0.00040000
+[2021-10-30 06:14:45,540 - trainer - INFO] - Train Epoch:[3/16] Step:[24003/24898] Loss: 0.021404 Loss_avg: 0.018407 LR: 0.00040000
 ```
 
 ### 6.4 测试流程
