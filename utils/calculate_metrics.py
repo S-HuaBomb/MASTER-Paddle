@@ -20,7 +20,7 @@ def process_args(args):
                         ))
 
     parser.add_argument('--label-path', dest='label_path',
-                        type=str, required=True,
+                        type=str, required=False,
                         help=(
                             'Result json file containing '
                             '[{ImageFile:<filename>, Label:<label_gold>}, ...]. '
@@ -49,59 +49,74 @@ def main(args):
 
     logging.info('Script being executed: %s' % __file__)
 
+    for pred_json in os.listdir(parameters.predict_path):
+        if not pred_json.endswith('json'):
+            continue
 
-    total_ref = 0
-    total_edit_distance = 0
-    total_correct_num = 0
-    total_correct_num_case_ins = 0
-    predicted_res = json.load(open(parameters.predict_path, encoding='utf-8'))
+        json_name = pred_json.split('.')[0]
+        label_name = json_name.replace('pred', 'label')
+        pred_json_path = os.path.join(parameters.predict_path, pred_json)
+        label_path = os.path.join(parameters.predict_path, f"{label_name}.txt")
 
-    label_gold_dict = {}
-    with open(parameters.label_path, encoding='utf-8') as f:
-        lines = f.readlines()
-        for line in lines:
-            line = line.strip().rstrip("\n").split(',')
-            # print('line:', line)
-            label_gold_dict[line[0]] = line[1]
+        print(f"calculating metrics of {json_name}")
 
-    hold_history = []
+        total_ref = 0
+        total_edit_distance = 0
+        total_correct_num = 0
+        total_correct_num_case_ins = 0
+        predicted_res = json.load(open(pred_json_path, encoding='utf-8'))
 
-    for idx, predict_item in enumerate(predicted_res):
-        if idx % 1000 == 0:
-            print('current sample idx: ' + str(idx))
-        filename = predict_item['filename']
-        label_pred = predict_item['result']
-        if not filename in label_gold_dict.keys(): continue
-        label_gold = label_gold_dict[filename]
-        # label_pred = label_pred.strip()
-        # label_gold = label_gold.strip()
+        label_gold_dict = {}
+        with open(label_path, encoding='utf-8') as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.strip().rstrip("\n").split(',')
+                # print('line:', line)
+                # lineobj = json.loads(line)
+                # text_label = lineobj['Label']
+                # ImageFile = lineobj['ImageFile']
+                label_gold_dict[line[0]] = line[1]
 
-        # calculate edit distance
-        ref = len(label_gold)
-        edit_distance = distance.levenshtein(label_gold, label_pred)
-        total_ref += ref
-        total_edit_distance += edit_distance
+        hold_history = []
 
-        # calculate accuracy
-        if edit_distance==0:
-            total_correct_num += 1
-        if label_gold.lower() == label_pred.lower():
-            total_correct_num_case_ins += 1
-
-        hold_history.append(filename)
-
-    # number of pred not equal to label
-    if len(hold_history) != len(label_gold_dict.keys()):
-        for file in label_gold_dict.keys():
-            if file in hold_history: continue
-            label_gold = label_gold_dict[file]
+        for idx, predict_item in enumerate(predicted_res):
+            if idx % 1000 == 0:
+                print('current sample idx: ' + str(idx))
+            filename = predict_item['filename']
+            label_pred = predict_item['result']
+            if not filename in label_gold_dict.keys(): continue
+            label_gold = label_gold_dict[filename]
+            # label_pred = label_pred.strip()
             # label_gold = label_gold.strip()
-            total_edit_distance +=len(label_gold)
-            total_ref += len(label_gold)
-    # print(total_correct_num)
-    logging.info('Sequence Accuracy: %f Case_ins: %f' % (float(total_correct_num) / len(label_gold_dict.keys()),
-                                                         float(total_correct_num_case_ins) / len(label_gold_dict.keys())))
-    logging.info('Edit Distance Accuracy: %f' % (1. - float(total_edit_distance) / total_ref))
+
+            # calculate edit distance
+            ref = len(label_gold)
+            edit_distance = distance.levenshtein(label_gold, label_pred)
+            total_ref += ref
+            total_edit_distance += edit_distance
+
+            # calculate accuracy
+            # print(f"filename: {filename} - label_gold: {label_gold} - label_pred: {label_pred}")
+            if edit_distance==0:
+                total_correct_num += 1
+            if label_gold.lower() == label_pred.lower():
+                total_correct_num_case_ins += 1
+
+            hold_history.append(filename)
+
+        # number of pred not equal to label
+        if len(hold_history) != len(label_gold_dict.keys()):
+            for file in label_gold_dict.keys():
+                if file in hold_history: continue
+                label_gold = label_gold_dict[file]
+                # label_gold = label_gold.strip()
+                total_edit_distance +=len(label_gold)
+                total_ref += len(label_gold)
+        # print(total_correct_num)
+        logging.info('Sequence Accuracy: %f Case_ins: %f' % (float(total_correct_num) / len(label_gold_dict.keys()),
+                                                            float(total_correct_num_case_ins) / len(label_gold_dict.keys())))
+        logging.info('Edit Distance Accuracy: %f' % (1. - float(total_edit_distance) / total_ref))
+        print("=============================================================================\n")
 
 '''
 usage:
