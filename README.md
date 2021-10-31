@@ -149,13 +149,12 @@ python -m paddle.distributed.launch --gpus '0,1,2,3' MASTER/train.py -c MASTER/c
 
 ### 5.2 预测
 
-#### Testing
-
-*现在只训练完成了 6 个 epoch*
+#### 5.2.1 Testing
 
 **训练好的模型可到百度网盘自取：[ckpts/checkpoint-epochX.pdparams](https://pan.baidu.com/s/1nUwv6Q49nM2DT7PxWNsZWw)**，提取码：5qyu。
 
-指定模型的路径和需要用于识别文本的图片文件夹：
+其中的 evaluations.zip 为从 lmdb_release 数据集的 evaluation 中读取出来的 jpg 图片及其标签，用于测试。
+指定模型的路径和 evaluations 文件夹：
 ```shell
 # test
 python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
@@ -165,16 +164,15 @@ python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
     --num_workers 4 \
     --batch_size 512
 ```
-代码运行完成的结果会输出到 `predict_result.json`，保存在 output_folder 指定的文件夹下（test_output），其结果如下所示：
+代码运行完成的结果会输出到 `[subset]_pred.json`，保存在 output_folder 指定的文件夹下（test_output），其结果示例如下：
 ```json
 [{"filename": "001.jpg", "result": "BEACH", "pred_score": 0.9915353655815125}, {"filename": "002.jpg", "result": "RONALDON", "pred_score": 0.8017494082450867}]
 ```
 
 
-#### Evaluation
-*训练没有完成，还未测试过此处的代码*
+#### 5.2.2 Evaluation
 
-我们需要运行上面的 Testing 得到预测结果之后才能运行 Evaluation 来计算准确率。
+需要先运行上面的 Testing 得到预测结果之后才能运行 Evaluation 来计算准确率。
 
 运行：
 ```
@@ -244,6 +242,128 @@ validate in epoch 3
 
 ### 6.4 测试流程
 见 [五、快速开始](#五快速开始)
+
+Test 输出如下：
+
+```
+Loading checkpoint: /home/aistudio/data/data111037/checkpoint-epoch8.pdparams 
+with saved best metric 0.6483
+subset IC13_1015 size: 1015 steps: 2
+  0%|                                                     | 0/2 [00:00<?, ?it/s]/opt/conda/envs/python35-paddle120-env/lib/python3.7/site-packages/paddle/fluid/framework.py:706: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  elif dtype == np.bool:
+100%|█████████████████████████████████████████████| 2/2 [01:02<00:00, 31.32s/it]
+Predict results has written to test_out/IC13_1015_pred.json
+
+subset IC15_1811 size: 1811 steps: 4
+100%|█████████████████████████████████████████████| 4/4 [01:51<00:00, 27.95s/it]
+Predict results has written to test_out/IC15_1811_pred.json
+
+subset IC03_860 size: 860 steps: 2
+100%|█████████████████████████████████████████████| 2/2 [00:53<00:00, 26.70s/it]
+Predict results has written to test_out/IC03_860_pred.json
+
+subset SVT size: 647 steps: 2
+100%|█████████████████████████████████████████████| 2/2 [00:41<00:00, 20.51s/it]
+Predict results has written to test_out/SVT_pred.json
+
+subset IC13_857 size: 857 steps: 2
+100%|█████████████████████████████████████████████| 2/2 [00:53<00:00, 26.81s/it]
+Predict results has written to test_out/IC13_857_pred.json
+
+subset CUTE80 size: 288 steps: 1
+100%|█████████████████████████████████████████████| 1/1 [00:18<00:00, 18.24s/it]
+Predict results has written to test_out/CUTE80_pred.json
+
+subset SVTP size: 645 steps: 2
+100%|█████████████████████████████████████████████| 2/2 [00:40<00:00, 20.32s/it]
+Predict results has written to test_out/SVTP_pred.json
+
+subset IC03_867 size: 867 steps: 2
+100%|█████████████████████████████████████████████| 2/2 [00:53<00:00, 26.77s/it]
+Predict results has written to test_out/IC03_867_pred.json
+
+subset IC15_2077 size: 2077 steps: 5
+100%|█████████████████████████████████████████████| 5/5 [02:10<00:00, 26.02s/it]
+Predict results has written to test_out/IC15_2077_pred.json
+
+subset IIIT5k_3000 size: 3000 steps: 6
+100%|█████████████████████████████████████████████| 6/6 [03:06<00:00, 31.01s/it]
+Predict results has written to test_out/IIIT5k_3000_pred.json
+```
+
+Evaluation 输出如下：
+
+```
+2021-10-31 13:48:36,420 root  INFO     Script being executed: MASTER-paddle/utils/calculate_metrics.py
+calculating metrics of IC03_867_pred
+current sample idx: 0
+2021-10-31 13:48:36,433 root  INFO     Sequence Accuracy: 0.416378 Case_ins: 0.950404
+2021-10-31 13:48:36,433 root  INFO     Edit Distance Accuracy: 0.481761
+=============================================================================
+
+calculating metrics of IC03_860_pred
+current sample idx: 0
+2021-10-31 13:48:36,450 root  INFO     Sequence Accuracy: 0.277907 Case_ins: 0.952326
+2021-10-31 13:48:36,450 root  INFO     Edit Distance Accuracy: 0.519021
+=============================================================================
+
+calculating metrics of SVTP_pred
+current sample idx: 0
+2021-10-31 13:48:36,460 root  INFO     Sequence Accuracy: 0.355039 Case_ins: 0.812403
+2021-10-31 13:48:36,460 root  INFO     Edit Distance Accuracy: 0.444943
+=============================================================================
+
+calculating metrics of IC13_857_pred
+current sample idx: 0
+2021-10-31 13:48:36,478 root  INFO     Sequence Accuracy: 0.296383 Case_ins: 0.953326
+2021-10-31 13:48:36,478 root  INFO     Edit Distance Accuracy: 0.584550
+=============================================================================
+
+calculating metrics of IC15_2077_pred
+current sample idx: 0
+current sample idx: 1000
+current sample idx: 2000
+2021-10-31 13:48:36,500 root  INFO     Sequence Accuracy: 0.569090 Case_ins: 0.705344
+2021-10-31 13:48:36,500 root  INFO     Edit Distance Accuracy: 0.698576
+=============================================================================
+
+calculating metrics of IC15_1811_pred
+current sample idx: 0
+current sample idx: 1000
+2021-10-31 13:48:36,528 root  INFO     Sequence Accuracy: 0.374379 Case_ins: 0.788515
+2021-10-31 13:48:36,528 root  INFO     Edit Distance Accuracy: 0.425992
+=============================================================================
+
+calculating metrics of SVT_pred
+current sample idx: 0
+2021-10-31 13:48:36,537 root  INFO     Sequence Accuracy: 0.463679 Case_ins: 0.885626
+2021-10-31 13:48:36,537 root  INFO     Edit Distance Accuracy: 0.555848
+=============================================================================
+
+calculating metrics of CUTE80_pred
+current sample idx: 0
+2021-10-31 13:48:36,540 root  INFO     Sequence Accuracy: 0.663194 Case_ins: 0.795139
+2021-10-31 13:48:36,540 root  INFO     Edit Distance Accuracy: 0.744201
+=============================================================================
+
+calculating metrics of IC13_1015_pred
+current sample idx: 0
+current sample idx: 1000
+2021-10-31 13:48:36,556 root  INFO     Sequence Accuracy: 0.381281 Case_ins: 0.934975
+2021-10-31 13:48:36,557 root  INFO     Edit Distance Accuracy: 0.417362
+=============================================================================
+
+calculating metrics of IIIT5k_3000_pred
+current sample idx: 0
+current sample idx: 1000
+current sample idx: 2000
+2021-10-31 13:48:36,599 root  INFO     Sequence Accuracy: 0.426667 Case_ins: 0.887333
+2021-10-31 13:48:36,599 root  INFO     Edit Distance Accuracy: 0.498526
+=============================================================================
+
+2021-10-31 13:48:36,600 root  INFO     Evaluation finished
+```
 
 ## 七、实验数据比较及复现心得
 ![1](https://img-blog.csdnimg.cn/518674491fec48cab57ce2c0db79f446.png)
