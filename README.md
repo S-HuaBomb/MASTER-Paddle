@@ -157,10 +157,15 @@ python -m paddle.distributed.launch --gpus '0,1,2,3' MASTER/train.py -c MASTER/c
 
 指定模型的路径和需要用于识别文本的图片文件夹：
 ```shell
-python test.py --checkpoint path/to/checkpoint --img_folder path/to/img_folder \
-               --output_folder path/to/output_folder
+# test
+python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
+    --evaluation path/to/evaluations \
+    --is_lmdb_folder 0 \
+    --output_folder test_output/ \
+    --num_workers 4 \
+    --batch_size 512
 ```
-代码运行完成的结果会输出到 `predict_result.json`，保存在 output_folder 指定的文件夹下，其结果如下所示：
+代码运行完成的结果会输出到 `predict_result.json`，保存在 output_folder 指定的文件夹下（test_output），其结果如下所示：
 ```json
 [{"filename": "001.jpg", "result": "BEACH", "pred_score": 0.9915353655815125}, {"filename": "002.jpg", "result": "RONALDON", "pred_score": 0.8017494082450867}]
 ```
@@ -173,7 +178,8 @@ python test.py --checkpoint path/to/checkpoint --img_folder path/to/img_folder \
 
 运行：
 ```
-python utils/calculate_metrics.py --predict-path predict_result.json --label-path label.txt
+# evaluation
+!python MASTER-paddle/utils/calculate_metrics.py --predict-path test_output/
 ```
 
 ## 六、代码结构与详细说明
