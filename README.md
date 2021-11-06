@@ -153,8 +153,12 @@ python -m paddle.distributed.launch --gpus '0,1,2,3' MASTER/train.py -c MASTER/c
 
 **训练好的模型可到百度网盘自取：[ckpts/checkpoint-epochX.pdparams](https://pan.baidu.com/s/1nUwv6Q49nM2DT7PxWNsZWw)**，提取码：5qyu。
 
-其中的 evaluations.zip 为从 lmdb_release 数据集的 evaluation 中读取出来的 jpg 图片及其标签，用于测试。
-指定模型的路径和 evaluations 文件夹：
+其中的 evaluations.zip 是从 lmdb_release 数据集的 evaluation 中读取出来的 jpg 图片及其标签，用于测试。
+
+> 直接读取 lmdb 的数据用于预测会导致精度很低。
+
+指定模型的路径和解压后的 evaluations 文件夹：
+
 ```shell
 # test
 python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
@@ -164,7 +168,9 @@ python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
     --num_workers 4 \
     --batch_size 512
 ```
+
 代码运行完成的结果会输出到 `[subset]_pred.json`，保存在 output_folder 指定的文件夹下（test_output），其结果示例如下：
+
 ```json
 [{"filename": "001.jpg", "result": "BEACH", "pred_score": 0.9915353655815125}, {"filename": "002.jpg", "result": "RONALDON", "pred_score": 0.8017494082450867}]
 ```
@@ -247,7 +253,7 @@ Test 输出如下：
 
 ```
 Loading checkpoint: /home/aistudio/data/data111037/checkpoint-epoch8.pdparams 
-with saved best metric 0.6483
+with saved best metric 0.962424
 subset IC13_1015 size: 1015 steps: 2
   0%|                                                     | 0/2 [00:00<?, ?it/s]/opt/conda/envs/python35-paddle120-env/lib/python3.7/site-packages/paddle/fluid/framework.py:706: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
 Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
