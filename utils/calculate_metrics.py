@@ -56,7 +56,9 @@ def main(args):
         json_name = pred_json.split('.')[0]
         label_name = json_name.replace('pred', 'label')
         pred_json_path = os.path.join(parameters.predict_path, pred_json)
-        label_path = os.path.join(parameters.predict_path, f"{label_name}.txt")
+        label_path = os.path.join(parameters.label_path, f"{label_name}.txt")
+        if not os.path.isfile(label_path):
+            raise ValueError(f"{label_name}.txt not found in {parameters.label_path}")
 
         print(f"calculating metrics of {json_name}")
 

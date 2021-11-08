@@ -183,7 +183,7 @@ python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
 运行：
 ```
 # evaluation
-!python MASTER-paddle/utils/calculate_metrics.py --predict-path test_output/
+!python MASTER-paddle/utils/calculate_metrics.py --predict-path test_output/ --label-path path/to/evaluations/
 ```
 
 ## 六、代码结构与详细说明

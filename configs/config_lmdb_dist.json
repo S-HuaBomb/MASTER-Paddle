@@ -57,7 +57,7 @@
     "train_loader": {
         "type": "DataLoader",
         "args":{
-            "batch_size": 32,
+            "batch_size": 128,
             "shuffle": true,
             "drop_last": true,
             "num_workers": 8,
@@ -68,8 +68,8 @@
     "val_dataset": {
         "type": "hierarchy_dataset",
         "args": {
-            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release/training/MJ",
-            "select_data": "MJ_test-MJ_valid",
+            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release/evaluation",
+            "select_data": "CUTE80-IC03_860-IC13_857-IC15_1811-IIIT5k_3000-SVT-SVTP",
             "img_w":160,
             "img_h":48,
             "training":true
@@ -78,10 +78,10 @@
     "val_loader": {
           "type": "DataLoader",
           "args":{
-              "batch_size": 32,
+              "batch_size": 128,
               "shuffle": false,
               "drop_last": false,
-              "num_workers": -1,
+              "num_workers": 8,
               "pin_memory":false
           }
       },
@@ -93,7 +93,7 @@
           }
     },
     "lr_scheduler": {
-        "type": "LinearWarmup",
+        "type": null,
         "args": {
             "step_size": 10000,
             "gamma": 0.5
@@ -105,14 +105,14 @@
         "max_len_step":null,
 
         "do_validation": true,
-        "validation_start_epoch": 2,
-        "log_step_interval": 1,
-        "val_step_interval": 12000,
+        "validation_start_epoch": 4,
+        "log_step_interval": 50,
+        "val_step_interval": 6000,
 
         "train_batch_size": 128,
-        "val_batch_size":128,
-        "train_num_workers":2,
-        "val_num_workers":2,
+        "val_batch_size": 128,
+        "train_num_workers": 8,
+        "val_num_workers": 8,
 
         "save_dir": "/root/paddlejob/workspace/output/",
         "log_dir": "/root/paddlejob/workspace/log/",
