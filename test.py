@@ -55,22 +55,23 @@ def predict(args):
         if args.is_lmdb_folder >= 1:
             print('is_lmdb_folder:', args.is_lmdb_folder)
             test_dataset = LmdbTestDataset(lmdb_dir_root=img_folder,
-                                    label_output=output_path,
-                                    transform=ResizeWeight((args.width, args.height), gray_format=convert_to_gray),
-                                    img_w=args.width,
-                                    img_h=args.height)
+                                           label_output=output_path,
+                                           transform=ResizeWeight((args.width, args.height),
+                                                                  gray_format=convert_to_gray),
+                                           img_w=args.width,
+                                           img_h=args.height)
         else:
             test_dataset = TextDataset(img_root=img_folder, txt_file=index_txt_file,
-                                    transform=ResizeWeight((args.width, args.height), gray_format=convert_to_gray),
-                                    img_w=args.width,
-                                    img_h=args.height,
-                                    training=False,
-                                    testing_with_label_file=index_txt_file is not None,
-                                    convert_to_gray=convert_to_gray)
+                                       transform=ResizeWeight((args.width, args.height), gray_format=convert_to_gray),
+                                       img_w=args.width,
+                                       img_h=args.height,
+                                       training=False,
+                                       testing_with_label_file=index_txt_file is not None,
+                                       convert_to_gray=convert_to_gray)
 
         test_data_loader = DataLoader(test_dataset, batch_size=args.bs, shuffle=False,
-                                    collate_fn=DistCollateFn(training=False),
-                                    num_workers=args.num_workers, drop_last=False)
+                                      collate_fn=DistCollateFn(training=False),
+                                      num_workers=args.num_workers, drop_last=False)
 
         print(f'subset {subset} size: {len(test_dataset)} steps: {len(test_data_loader)}')
 
@@ -112,8 +113,8 @@ def predict(args):
                     pred_score_list.append(prob[i])
                 pred_score = sum(pred_score_list) / len(pred_score_list)
                 pred_item = {"filename": Path(f"{img_name}").name,
-                            "result": predict_text,
-                            "pred_score": pred_score.cpu().item()}
+                             "result": predict_text,
+                             "pred_score": pred_score.cpu().item()}
                 pred_results.append(pred_item)
 
         with result_output_file.open(mode='w') as f:

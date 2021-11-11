@@ -111,8 +111,8 @@
 
         "train_batch_size": 128,
         "val_batch_size": 128,
-        "train_num_workers": 8,
-        "val_num_workers": 8,
+        "train_num_workers": 2,
+        "val_num_workers": 2,
 
         "save_dir": "/root/paddlejob/workspace/output/",
         "log_dir": "/root/paddlejob/workspace/log/",
