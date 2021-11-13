@@ -7,7 +7,7 @@ import paddle
 
 
 # These no_grad_* functions are necessary as wrappers around the parts of these
-# functions that use `with torch.no_grad()`. The JIT doesn't support context
+# functions that use `with paddle.no_grad()`. The JIT doesn't support context
 # managers, so these need to be implemented as builtins. Using these wrappers
 # lets us keep those builtins small and re-usable.
 def _no_grad_uniform_(tensor, a, b):
@@ -123,12 +123,12 @@ def uniform_(tensor: Tensor, a: float = 0., b: float = 1.) -> Tensor:
     distribution :math:`\mathcal{U}(a, b)`.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
         a: the lower bound of the uniform distribution
         b: the upper bound of the uniform distribution
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.uniform_(w)
     """
     return _no_grad_uniform_(tensor, a, b)
@@ -139,12 +139,12 @@ def normal_(tensor: Tensor, mean: float = 0., std: float = 1.) -> Tensor:
     distribution :math:`\mathcal{N}(\text{mean}, \text{std}^2)`.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
         mean: the mean of the normal distribution
         std: the standard deviation of the normal distribution
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.normal_(w)
     """
     return _no_grad_normal_(tensor, mean, std)
@@ -159,14 +159,14 @@ def trunc_normal_(tensor: Tensor, mean: float = 0., std: float = 1., a: float = 
     best when :math:`a \leq \text{mean} \leq b`.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
         mean: the mean of the normal distribution
         std: the standard deviation of the normal distribution
         a: the minimum cutoff value
         b: the maximum cutoff value
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.trunc_normal_(w)
     """
     return _no_grad_trunc_normal_(tensor, mean, std, a, b)
@@ -176,11 +176,11 @@ def constant_(tensor: Tensor, val: float) -> Tensor:
     r"""Fills the input Tensor with the value :math:`\text{val}`.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
         val: the value to fill the tensor with
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.constant_(w, 0.3)
     """
     return _no_grad_fill_(tensor, val)
@@ -190,10 +190,10 @@ def ones_(tensor: Tensor) -> Tensor:
     r"""Fills the input Tensor with the scalar value `1`.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.ones_(w)
     """
     return _no_grad_fill_(tensor, 1.)
@@ -203,10 +203,10 @@ def zeros_(tensor: Tensor) -> Tensor:
     r"""Fills the input Tensor with the scalar value `0`.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.zeros_(w)
     """
     return _no_grad_zero_(tensor)
@@ -218,10 +218,10 @@ def eye_(tensor):
     many inputs are preserved as possible.
 
     Args:
-        tensor: a 2-dimensional `torch.Tensor`
+        tensor: a 2-dimensional `paddle.Tensor`
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.eye_(w)
     """
     if tensor.ndimension() != 2:
@@ -239,12 +239,12 @@ def dirac_(tensor, groups=1):
     of groups>1, each group of channels preserves identity
 
     Args:
-        tensor: a {3, 4, 5}-dimensional `torch.Tensor`
+        tensor: a {3, 4, 5}-dimensional `paddle.Tensor`
         groups (optional): number of groups in the conv layer (default: 1)
     Examples:
-        >>> w = torch.empty(3, 16, 5, 5)
+        >>> w = paddle.empty(3, 16, 5, 5)
         >>> nn.init.dirac_(w)
-        >>> w = torch.empty(3, 24, 5, 5)
+        >>> w = paddle.empty(3, 24, 5, 5)
         >>> nn.init.dirac_(w, 3)
     """
     dimensions = tensor.ndimension()
@@ -304,11 +304,11 @@ def xavier_uniform_(tensor: Tensor, gain: float = 1.) -> Tensor:
     Also known as Glorot initialization.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
         gain: an optional scaling factor
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.xavier_uniform_(w, gain=nn.init.calculate_gain('relu'))
     """
     fan_in, fan_out = _calculate_fan_in_and_fan_out(tensor)
@@ -331,11 +331,11 @@ def xavier_normal_(tensor: Tensor, gain: float = 1.) -> Tensor:
     Also known as Glorot initialization.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
         gain: an optional scaling factor
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.xavier_normal_(w)
     """
     fan_in, fan_out = _calculate_fan_in_and_fan_out(tensor)
@@ -367,7 +367,7 @@ def kaiming_uniform_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
     Also known as He initialization.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
         a: the negative slope of the rectifier used after this layer (only
             used with ``'leaky_relu'``)
         mode: either ``'fan_in'`` (default) or ``'fan_out'``. Choosing ``'fan_in'``
@@ -378,7 +378,7 @@ def kaiming_uniform_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
             recommended to use only with ``'relu'`` or ``'leaky_relu'`` (default).
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.kaiming_uniform_(w, mode='fan_in', nonlinearity='relu')
     """
     fan = _calculate_correct_fan(tensor, mode)
@@ -403,7 +403,7 @@ def kaiming_normal_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
     Also known as He initialization.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
         a: the negative slope of the rectifier used after this layer (only
             used with ``'leaky_relu'``)
         mode: either ``'fan_in'`` (default) or ``'fan_out'``. Choosing ``'fan_in'``
@@ -414,7 +414,7 @@ def kaiming_normal_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
             recommended to use only with ``'relu'`` or ``'leaky_relu'`` (default).
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.kaiming_normal_(w, mode='fan_out', nonlinearity='relu')
     """
     fan = _calculate_correct_fan(tensor, mode)
@@ -433,11 +433,11 @@ def orthogonal_(tensor, gain=1):
     trailing dimensions are flattened.
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`, where :math:`n \geq 2`
+        tensor: an n-dimensional `paddle.Tensor`, where :math:`n \geq 2`
         gain: optional scaling factor
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.orthogonal_(w)
     """
     if tensor.ndimension() < 2:
@@ -452,7 +452,7 @@ def orthogonal_(tensor, gain=1):
 
     # Compute the qr factorization
     q, r = paddle.to_tensor(np.linalg.qr(flattened.numpy()))
-    # q, r = torch.qr(flattened)
+    # q, r = paddle.qr(flattened)
     # Make Q uniform according to https://arxiv.org/pdf/math-ph/0609050.pdf
     d = paddle.diag(r, 0)
     ph = d.sign()
@@ -474,13 +474,13 @@ def sparse_(tensor, sparsity, std=0.01):
     Hessian-free optimization` - Martens, J. (2010).
 
     Args:
-        tensor: an n-dimensional `torch.Tensor`
+        tensor: an n-dimensional `paddle.Tensor`
         sparsity: The fraction of elements in each column to be set to zero
         std: the standard deviation of the normal distribution used to generate
             the non-zero values
 
     Examples:
-        >>> w = torch.empty(3, 5)
+        >>> w = paddle.empty(3, 5)
         >>> nn.init.sparse_(w, sparsity=0.1)
     """
     if tensor.ndimension() != 2:
@@ -512,9 +512,9 @@ def _make_deprecate(meth):
     {old_name}(...)
 
     .. warning::
-        This method is now deprecated in favor of :func:`torch.nn.init.{new_name}`.
+        This method is now deprecated in favor of :func:`paddle.nn.init.{new_name}`.
 
-    See :func:`~torch.nn.init.{new_name}` for details.""".format(
+    See :func:`~paddle.nn.init.{new_name}` for details.""".format(
         old_name=old_name, new_name=new_name)
     deprecated_init.__name__ = old_name
     return deprecated_init

@@ -145,8 +145,8 @@ class Trainer:
 
             # ensure distribute worker sample different data,
             # set different random seed by passing epoch to sampler
-            # if self.distributed:
-            #     self.data_loader.sampler.set_epoch(epoch)
+            if self.distributed:
+                self.data_loader.batch_sampler.set_epoch(epoch)
 
             self.valid_data_loader.batch_sampler.set_epoch(
                 epoch) if self.valid_data_loader.batch_sampler is not None else None
