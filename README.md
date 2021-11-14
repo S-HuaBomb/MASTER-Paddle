@@ -151,7 +151,7 @@ python -m paddle.distributed.launch --gpus '0,1,2,3' MASTER/train.py -c MASTER/c
 
 #### 5.2.1 Testing
 
-**训练好的模型可到百度网盘自取：[ckpts/checkpoint-epochX.pdparams](https://pan.baidu.com/s/1nUwv6Q49nM2DT7PxWNsZWw)**，提取码：5qyu。
+**训练好的模型可到百度网盘自取：[ckpts/checkpoint-epochX.pdparams](https://pan.baidu.com/s/1o-s85MTFjs7leMqy9uxm_A)**，提取码：opkk。
 
 其中的 evaluations.zip 是从 lmdb_release 数据集的 evaluation 中读取出来的 jpg 图片及其标签，用于测试。
 
