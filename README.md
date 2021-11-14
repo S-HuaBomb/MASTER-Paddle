@@ -36,10 +36,10 @@
 ## 二、复现精度
 参考官方开源的 pytorch 版本代码 [https://github.com/wenwenyu/MASTER-pytorch](https://github.com/wenwenyu/MASTER-pytorch)，基于 paddlepaddle 深度学习框架，对文献算法进行复现后，本项目达到的测试精度，如下表所示：
 
-| 数据集 | IIIT5K | SVT |  IC03 | IC13 | IC15 | SVTP | CUTE |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| paddle 版本精度 | 88.2  | 88.4 | 95.3 | 95.2 | 76.8 | 81.4 | 77.8 |
-| 参考文献精度 | 95.0 | 90.6 | 96.4 | 95.3 | 79.4 | 84.5 | 87.5 |
+| 数据集 | IIIT5K | SVT |  IC03 | IC13 | IC15 | SVTP | CUTE | avg |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **paddle 版本精度** | 92.1  | **91.8** | 96.0 | **96.1** | **82.4** | **85.7** | 81.6 | 89.38 |
+| 参考文献精度 | 95.0 | 90.6 | 96.4 | 95.3 | 79.4 | 84.5 | 84.5 | 89.81 |
 
 超参数配置如下：
 > 详见 `MASTER-Paddle/configs/config_lmdb_dist.json`
@@ -157,7 +157,7 @@ python -m paddle.distributed.launch --gpus '0,1,2,3' MASTER/train.py -c MASTER/c
 
 > 直接读取 lmdb 的数据用于预测会导致精度很低。
 
-指定模型的路径和解压后的 evaluations 文件夹：
+指定模型的路径和解压后的 `evaluations` 文件夹：
 
 ```shell
 # test
@@ -198,7 +198,7 @@ python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
 ├── models                     # 网络结构定义
 │   ├── backbone.py              # 骨干 CNN 网络 ResNet-31
 │   ├── context_block.py          # context_block
-│   ├── initializers.py       # 抄 pytorch 的参数初始化函数
+│   ├── initializers.py       # 借鉴 pytorch 的参数初始化函数
 │   ├── master.py               # MASTER 主网络
 │   ├── transformer.py              # transformer 模块
 ├── tests           # 测试代码
@@ -301,74 +301,53 @@ Predict results has written to test_out/IIIT5k_3000_pred.json
 Evaluation 输出如下：
 
 ```
-2021-10-31 13:48:36,420 root  INFO     Script being executed: MASTER-paddle/utils/calculate_metrics.py
-calculating metrics of IC03_867_pred
-current sample idx: 0
-2021-10-31 13:48:36,433 root  INFO     Sequence Accuracy: 0.416378 Case_ins: 0.950404
-2021-10-31 13:48:36,433 root  INFO     Edit Distance Accuracy: 0.481761
-=============================================================================
-
-calculating metrics of IC03_860_pred
-current sample idx: 0
-2021-10-31 13:48:36,450 root  INFO     Sequence Accuracy: 0.277907 Case_ins: 0.952326
-2021-10-31 13:48:36,450 root  INFO     Edit Distance Accuracy: 0.519021
-=============================================================================
-
-calculating metrics of SVTP_pred
-current sample idx: 0
-2021-10-31 13:48:36,460 root  INFO     Sequence Accuracy: 0.355039 Case_ins: 0.812403
-2021-10-31 13:48:36,460 root  INFO     Edit Distance Accuracy: 0.444943
-=============================================================================
-
+2021-11-14 18:19:00,079 root  INFO     Script being executed: MASTER-paddle/utils/calculate_metrics.py
 calculating metrics of IC13_857_pred
 current sample idx: 0
-2021-10-31 13:48:36,478 root  INFO     Sequence Accuracy: 0.296383 Case_ins: 0.953326
-2021-10-31 13:48:36,478 root  INFO     Edit Distance Accuracy: 0.584550
-=============================================================================
-
-calculating metrics of IC15_2077_pred
-current sample idx: 0
-current sample idx: 1000
-current sample idx: 2000
-2021-10-31 13:48:36,500 root  INFO     Sequence Accuracy: 0.569090 Case_ins: 0.705344
-2021-10-31 13:48:36,500 root  INFO     Edit Distance Accuracy: 0.698576
-=============================================================================
-
-calculating metrics of IC15_1811_pred
-current sample idx: 0
-current sample idx: 1000
-2021-10-31 13:48:36,528 root  INFO     Sequence Accuracy: 0.374379 Case_ins: 0.788515
-2021-10-31 13:48:36,528 root  INFO     Edit Distance Accuracy: 0.425992
+2021-11-14 18:19:00,097 root  INFO     Sequence Accuracy: 0.308051 Case_ins: 0.961494
+2021-11-14 18:19:00,097 root  INFO     Edit Distance Accuracy: 0.294415
 =============================================================================
 
 calculating metrics of SVT_pred
 current sample idx: 0
-2021-10-31 13:48:36,537 root  INFO     Sequence Accuracy: 0.463679 Case_ins: 0.885626
-2021-10-31 13:48:36,537 root  INFO     Edit Distance Accuracy: 0.555848
-=============================================================================
-
-calculating metrics of CUTE80_pred
-current sample idx: 0
-2021-10-31 13:48:36,540 root  INFO     Sequence Accuracy: 0.663194 Case_ins: 0.795139
-2021-10-31 13:48:36,540 root  INFO     Edit Distance Accuracy: 0.744201
-=============================================================================
-
-calculating metrics of IC13_1015_pred
-current sample idx: 0
-current sample idx: 1000
-2021-10-31 13:48:36,556 root  INFO     Sequence Accuracy: 0.381281 Case_ins: 0.934975
-2021-10-31 13:48:36,557 root  INFO     Edit Distance Accuracy: 0.417362
+2021-11-14 18:19:00,112 root  INFO     Sequence Accuracy: 0.825348 Case_ins: 0.918083
+2021-11-14 18:19:00,112 root  INFO     Edit Distance Accuracy: 0.870653
 =============================================================================
 
 calculating metrics of IIIT5k_3000_pred
 current sample idx: 0
 current sample idx: 1000
 current sample idx: 2000
-2021-10-31 13:48:36,599 root  INFO     Sequence Accuracy: 0.426667 Case_ins: 0.887333
-2021-10-31 13:48:36,599 root  INFO     Edit Distance Accuracy: 0.498526
+2021-11-14 18:19:00,133 root  INFO     Sequence Accuracy: 0.815000 Case_ins: 0.920667
+2021-11-14 18:19:00,133 root  INFO     Edit Distance Accuracy: 0.862663
 =============================================================================
 
-2021-10-31 13:48:36,600 root  INFO     Evaluation finished
+calculating metrics of IC15_1811_pred
+current sample idx: 0
+current sample idx: 1000
+2021-11-14 18:19:00,158 root  INFO     Sequence Accuracy: 0.723909 Case_ins: 0.823854
+2021-11-14 18:19:00,158 root  INFO     Edit Distance Accuracy: 0.819207
+=============================================================================
+
+calculating metrics of SVTP_pred
+current sample idx: 0
+2021-11-14 18:19:00,162 root  INFO     Sequence Accuracy: 0.781395 Case_ins: 0.857364
+2021-11-14 18:19:00,162 root  INFO     Edit Distance Accuracy: 0.858463
+=============================================================================
+
+calculating metrics of CUTE80_pred
+current sample idx: 0
+2021-11-14 18:19:00,171 root  INFO     Sequence Accuracy: 0.684028 Case_ins: 0.815972
+2021-11-14 18:19:00,171 root  INFO     Edit Distance Accuracy: 0.779937
+=============================================================================
+
+calculating metrics of IC03_860_pred
+current sample idx: 0
+2021-11-14 18:19:00,185 root  INFO     Sequence Accuracy: 0.380233 Case_ins: 0.959302
+2021-11-14 18:19:00,185 root  INFO     Edit Distance Accuracy: 0.361711
+=============================================================================
+
+2021-11-14 18:19:00,186 root  INFO     Evaluation finished
 ```
 
 ## 七、实验数据比较及复现心得
@@ -388,6 +367,7 @@ current sample idx: 2000
 我把 `model/master.py` 中所有的 `torch.script.jit.` 的代码全部去掉了，网络模型全部换成继承 `nn.Layer`。因为 paddle 似乎没有 TorchScript 的替代品，所以咱们不需要？ :smile: 。
 
 ## 八、模型信息
+
 | 信息 | 说明 |
 | --- | --- |
 | 发布者 | 石华榜 |

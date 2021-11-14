@@ -596,7 +596,7 @@ class Trainer:
         self.logger_info("Loading checkpoint: {} ...".format(resume_path))
         # map_location = {'cuda:%d' % 0: 'cuda:%d' % self.config['local_rank']}
         checkpoint = paddle.load(resume_path)
-        self.start_epoch = 0  # checkpoint['epoch'] + 1 if not self.finetune else 1
+        self.start_epoch = checkpoint['epoch'] + 1 if not self.finetune else 1
         self.monitor_best = checkpoint['monitor_best']
 
         # load architecture params from checkpoint.
