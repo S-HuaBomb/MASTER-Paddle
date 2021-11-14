@@ -151,11 +151,9 @@ python -m paddle.distributed.launch --gpus '0,1,2,3' MASTER/train.py -c MASTER/c
 
 #### 5.2.1 Testing
 
-**训练好的模型可到百度网盘自取：[ckpts/checkpoint-epochX.pdparams](https://pan.baidu.com/s/1o-s85MTFjs7leMqy9uxm_A)**，提取码：opkk。
+**训练好的模型以及测试集可到百度网盘自取：[ckpts/model_best.pdparams](https://pan.baidu.com/s/1o-s85MTFjs7leMqy9uxm_A)**，提取码：opkk。
 
-其中的 evaluations.zip 是从 lmdb_release 数据集的 evaluation 中读取出来的 jpg 图片及其标签，用于测试。
-
-> 直接读取 lmdb 的数据用于预测会导致精度很低。
+其中的 `evaluations.zip` 是从 data_lmdb_release 数据集的 evaluation 中读取出来的 jpg 图片及其标签，用于测试。
 
 指定模型的路径和解压后的 `evaluations` 文件夹：
 
@@ -169,7 +167,7 @@ python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
     --batch_size 512
 ```
 
-代码运行完成的结果会输出到 `[subset]_pred.json`，保存在 output_folder 指定的文件夹下（test_output），其结果示例如下：
+预测完测试集中一个子集的结果会输出到 `[subset]_pred.json`，保存在 output_folder 指定的文件夹下（test_output），其结果示例如下：
 
 ```json
 [{"filename": "001.jpg", "result": "BEACH", "pred_score": 0.9915353655815125}, {"filename": "002.jpg", "result": "RONALDON", "pred_score": 0.8017494082450867}]
@@ -178,7 +176,7 @@ python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
 
 #### 5.2.2 Evaluation
 
-需要先运行上面的 Testing 得到预测结果之后才能运行 Evaluation 来计算准确率。
+需要先运行上面的 Testing 得到测试集的预测结果之后才能运行 Evaluation 来计算准确率。
 
 运行：
 ```
