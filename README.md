@@ -88,6 +88,7 @@
   - pandas==1.0.5
   - numpy==1.19.2
   - tqdm==4.47
+  - lmdb==1.2.1
   - Distance==0.1.3
   - Pillow==7.2.0
 
@@ -379,7 +380,8 @@ current sample idx: 0
 | 应用场景 | 多场景文本识别 |
 | 支持硬件 | GPU × 4 |
 | data_lmdb_release 数据集下载 | 百度网盘 [data_lmdb_release.zip](https://pan.baidu.com/s/1KSNLv4EY3zFWHpBYlpFCBQ)，提取码：`rryk` |
-| AI Studio 地址 | [https://aistudio.baidu.com/aistudio/projectdetail/2351963](https://aistudio.baidu.com/aistudio/projectdetail/2351963) |
+| 预训练模型下载 | 百度网盘 [ckpts/model_best.pdparams](https://pan.baidu.com/s/1o-s85MTFjs7leMqy9uxm_A)，提取码：`opkk` |
+| AI Studio 地址 | [MASTER-Paddle](https://aistudio.baidu.com/aistudio/projectdetail/2448756?contributionType=1) |
 
 ## Citations
 
