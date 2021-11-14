@@ -215,6 +215,8 @@ python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
 ### 6.3 训练流程
 见 [五、快速开始](#五快速开始)
 
+训练的 log 详见 `train_logs/trainer-0.log`，
+
 执行训练开始后，将得到类似如下的输出：
 ```
 [2021-10-12 18:46:00,739 - train - INFO] - Distributed GPU training model start...
