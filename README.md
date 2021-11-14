@@ -151,6 +151,8 @@ python -m paddle.distributed.launch --gpus '0,1,2,3' MASTER/train.py -c MASTER/c
 
 #### 5.2.1 Testing
 
+> 比较耗时，需要使用 GPU。使用 V100 预测完测试集大约耗费 13 分钟。
+
 **训练好的模型以及测试集可到百度网盘自取：[ckpts/model_best.pdparams](https://pan.baidu.com/s/1o-s85MTFjs7leMqy9uxm_A)**，提取码：opkk。
 
 其中的 `evaluations.zip` 是从 data_lmdb_release 数据集的 evaluation 中读取出来的 jpg 图片及其标签，用于测试。
@@ -173,10 +175,11 @@ python MASTER-paddle/test.py --checkpoint path/to/model_best.pdparams \
 [{"filename": "001.jpg", "result": "BEACH", "pred_score": 0.9915353655815125}, {"filename": "002.jpg", "result": "RONALDON", "pred_score": 0.8017494082450867}]
 ```
 
+最新预测结果及其标签文件详见 `MASTER-paddle/test_output/`
 
 #### 5.2.2 Evaluation
 
-需要先运行上面的 Testing 得到测试集的预测结果之后才能运行 Evaluation 来计算准确率。
+需要先运行上面的 Testing 得到测试集的预测结果之后才能运行 Evaluation 来计算准确率。也可以直接使用 `MASTER-paddle/test_output/` 中的最新预测结果验证精度。
 
 运行：
 ```
