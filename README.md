@@ -49,20 +49,20 @@
 | distributed | true | 强烈推荐使用多卡训练 |
 | local_world_size | 4 | 4 卡刚刚好
 | local_rank | 0 | 主卡 |
-| n_class | 62 | 文本类数：10 个阿拉伯数字 + 52 个区分大小写的英文字母 + 4 个文档描述符（这 4 个类竟然是代码里硬生生加上 4）:blush: |
+| n_class | 62 | 文本类数：10 个阿拉伯数字 + 52 个区分大小写的英文字母 + 4 个文档描述符 |
 | with_encoder | false |  with_encoder? false |
 |model_size | 512 | 编码器的输出尺寸 |
 | ratio | 0.0625 |  |
 | dropout | 0.2 | dropout  |
-| feed_forward_size | 2048 | dff 前馈模块设置为2048| 
+| feed_forward_size | 2048 | dff 前馈模块设置为 2048| 
 | multiheads | 8 | 多头注意力数是 8 |
 | batch_size | 128 | bs = 128 单卡占用不到 16 GB 显存|
-| num_workers | 2 | dataloader workers |
-| epochs | 16 | 论文说 12 个 epoch 就好了 |
-| lr | 0.0004 | 4 卡并行情况下。单卡情况下 lr 是 0.0001，全程保持不变 |
-| lr_scheduler | LinearWarmup | 最好利用 lr warm-up 来训练，我猜的 |
+| num_workers | 2 | dataloader workers，太大会内存溢出 |
+| epochs | 16 | 论文说训了 12 个 epoch，事实上 5 个 epoch 之后训练基本稳定 |
+| lr | 0.0004 | 4 卡并行情况下 lr=0.0004。单卡情况下 lr=0.0001，全程保持不变 |
+| lr_scheduler | null | lr 全程保持不变 |
 | img_w | 160 | 图片裁剪宽度|
-| img_h | 48 | 图片裁剪宽度 |
+| img_h | 48 | 图片裁剪高度 |
 
 ## 三、数据集
 
@@ -125,7 +125,7 @@
 
 在 `configs/config_lmdb_dist.json` 中修改训练配置
 
-> 源码的默认配置是跑不起来的，比如 `local_rank=-1` 在多卡训练的时候代码会对这个变量做判断，然后跳过创建输出文件夹的一段代码，导致模型没有保存任何东西。一开始 `n_class=-1` 也是不对的，这个变量要指定训练集中出现的所有字符的类数，论文指出有 66 类。`lr=0.0004` 是 4 卡训练的配置，单卡是 0.0001。`lr_scheduler` 是我自己加的学习率预热 [`paddle.optimizer.lr.LinearWarmup`](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/lr/ReduceOnPlateau_cn.html)。`epochs=16`，论文指出 4 卡训练 12 个 epochs 即可完成。**若要单卡训练（debug），只需设置 `"distributed":false`**。
+> 源码的默认配置是跑不起来的，比如 `local_rank=-1` 在多卡训练的时候代码会对这个变量做判断，然后跳过创建输出文件夹的一段代码，导致模型没有保存任何东西。一开始 `n_class=-1` 也是不对的，这个变量要指定训练集中出现的所有字符的类数，论文指出有 66 类。`lr=0.0004` 是 4 卡训练的配置，单卡是 0.0001。`epochs=16`，论文指出 4 卡训练 12 个 epochs 即可完成。**若要单卡训练（debug），只需设置 `"distributed":false`**。
     
 #### step2: 运行训练
 
@@ -364,18 +364,18 @@ current sample idx: 0
 
 #### 多卡训练的 batch_size & learning_rate
 
-单卡时 learning_rate 设为 0.0001，原文提到 learning_rate 的大小应该与 GPU 数量相关联，这也是以往做过的研究。多卡时得益于 [`paddle.DataParallel`](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/DataParallel_cn.html#dataparallel) 的多进程并行，在保持单卡 bs = 128 的情况下，4 个 Trainer 进程的 `paddle.io.DataLoader` 分别加载 bs = 128 的 samples，等价于 bs = 128 × 4；所以，根据 [linear scale rule](https://www.cnblogs.com/leebxo/p/10976653.html)，lr 需要等价倍增。**但是直接从头开始使用 4 倍 lr 似乎不是最佳选择，或许需要使用 [lr warm-up](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/optimizer/lr/LinearWarmup_cn.html)，在开头的几个 epochs 把 lr 从 0.0001 预热到 0.0004，后程再保持 0.0004 或许是更好的选择。**
->  [`torch.nn.DataParallel`](https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html?highlight=dataparallel#torch.nn.DataParallel) 是一个进程多个线程并行，受制于 Python 的 GIL 锁，所以 PyTorch 官方已经不推荐使用，而是主推更好更快的多进程并行：[`torch.nn.parallel.DistributedDataParallel`](https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel)。所以 paddle.DataParallel 应该是对标的 PyTorch 的 DDP :smile:
+单卡时 learning_rate 设为 0.0001，原文提到 learning_rate 的大小应该与 GPU 数量相关联，这也是以往做过的研究。多卡时得益于 [`paddle.DataParallel`](https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/DataParallel_cn.html#dataparallel) 的多进程并行，在保持单卡 bs = 128 的情况下，4 个 Trainer 进程的 `paddle.io.DataLoader` 分别加载 bs = 128 的 samples，等价于 bs = 128 × 4；所以，根据 [linear scale rule](https://www.cnblogs.com/leebxo/p/10976653.html)，lr 需要等价倍增。
+>  [`torch.nn.DataParallel`](https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html?highlight=dataparallel#torch.nn.DataParallel) 是一个进程多个线程并行，受制于 Python 的 GIL 锁，所以 PyTorch 官方已经不推荐使用，而是主推更好更快的多进程并行：[`torch.nn.parallel.DistributedDataParallel`](https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel)。paddle.DataParallel 是对应 PyTorch 的 DDP :smile:
 
-#### 要不要理 TorchScript？
-我把 `model/master.py` 中所有的 `torch.script.jit.` 的代码全部去掉了，网络模型全部换成继承 `nn.Layer`。因为 paddle 似乎没有 TorchScript 的替代品，所以咱们不需要？ :smile: 。
+#### What is TorchScript？
+我把 `model/master.py` 中所有的 `torch.script.jit.` 的代码全部去掉了，只要是网络模型类全部继承自 `nn.Layer`。因为 paddle 似乎没有 TorchScript 的替代品，所以咱们不需要？ :smile: 。
 
 ## 八、模型信息
 
 | 信息 | 说明 |
 | --- | --- |
 | 发布者 | 石华榜 |
-| 时间 | 2021.10 |
+| 时间 | 2021.11 |
 | 框架版本 | paddlepaddle==2.1.2 |
 | 应用场景 | 多场景文本识别 |
 | 支持硬件 | GPU × 4 |
