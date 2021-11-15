@@ -68,8 +68,8 @@
     "val_dataset": {
         "type": "hierarchy_dataset",
         "args": {
-            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release/training/MJ",
-            "select_data": "MJ_test-MJ_valid",
+            "lmdb_dir_root":"/root/paddlejob/workspace/train_data/datasets/data_lmdb_release/evaluation",
+            "select_data": "CUTE80-IC03_860-IC13_857-IC15_1811-IIIT5k_3000-SVT-SVTP",
             "img_w":160,
             "img_h":48,
             "training":true
