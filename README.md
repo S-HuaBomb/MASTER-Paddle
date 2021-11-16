@@ -374,7 +374,7 @@ current sample idx: 0
 
 | 信息 | 说明 |
 | --- | --- |
-| 发布者 | 石华榜 |
+| 发布者 | [石华榜](https://github.com/S-HuaBomb)、[杨瑞智](https://github.com/buriedms) |
 | 时间 | 2021.11 |
 | 框架版本 | paddlepaddle==2.1.2 |
 | 应用场景 | 多场景文本识别 |
